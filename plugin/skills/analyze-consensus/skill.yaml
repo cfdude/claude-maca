@@ -1,0 +1,10 @@
+name: analyze-consensus
+description: Analyze debate quality, convergence patterns, and dataset statistics
+instructions: |
+  Analyze completed debates:
+  - Consensus strength distribution
+  - Convergence trends
+  - Quality metrics
+  - Dataset balance
+
+  Usage: /analyze-consensus --summary

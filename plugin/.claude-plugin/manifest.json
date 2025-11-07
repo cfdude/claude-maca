@@ -1,0 +1,65 @@
+{
+  "name": "maca-debate",
+  "version": "1.0.0",
+  "description": "Multi-Agent Consensus Alignment (MACA) plugin for debate-based LLM training",
+  "author": "Rob Sherman",
+  "repository": "https://github.com/robsherman/claude-plugins",
+  "license": "MIT",
+  "homepage": "https://github.com/robsherman/claude-plugins/tree/main/maca-debate",
+  "keywords": [
+    "maca",
+    "multi-agent",
+    "consensus",
+    "dpo",
+    "llm-training",
+    "debate",
+    "fine-tuning",
+    "preference-learning"
+  ],
+  "engines": {
+    "claude": ">=1.0.0"
+  },
+  "dependencies": {
+    "node": ">=18.0.0",
+    "ollama": ">=0.1.0"
+  },
+  "components": {
+    "agents": [
+      "debate-orchestrator",
+      "dpo-trainer",
+      "dataset-curator"
+    ],
+    "skills": [
+      "run-debate",
+      "export-training-data",
+      "analyze-consensus"
+    ],
+    "hooks": [
+      "post-debate-export"
+    ],
+    "mcpServer": true
+  },
+  "configuration": {
+    "ollama": {
+      "endpoint": "http://localhost:11434",
+      "model": "qwen2.5:3b",
+      "temperature": 0.8,
+      "required": true
+    },
+    "mcp": {
+      "serverPath": "./mcp-server/dist/index.js",
+      "required": true
+    }
+  },
+  "installation": {
+    "preinstall": [
+      "check_node_version",
+      "check_ollama_installed"
+    ],
+    "postinstall": [
+      "npm_install_mcp_server",
+      "setup_data_directories",
+      "verify_installation"
+    ]
+  }
+}

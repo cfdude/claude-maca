@@ -1,0 +1,11 @@
+name: run-debate
+description: Execute a complete MACA debate workflow from start to DPO export
+instructions: |
+  Quick workflow:
+  1. Ensure agents are registered (connect_llm)
+  2. Start debate with question
+  3. Run 2 rounds (independent → peer feedback)
+  4. Calculate consensus
+  5. Export DPO pairs
+
+  Use this skill to orchestrate end-to-end debates.
