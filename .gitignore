@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.pnpm-debug.log*
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Environment
+.env
+.env.local
+
+# Extracted data (large files)
+extracted_data/full_text.txt
+
+# Optional: Ignore generated images (uncomment if repo gets too large)
+# images/*.png
+# images/*.jpg
+# images/figures/*.png
