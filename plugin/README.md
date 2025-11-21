@@ -210,12 +210,12 @@ Filters and exports high-quality DPO pairs ready for fine-tuning.
 
 ## 💼 Use Cases
 
-### Mortgage Advisory LLM (Highway.ai)
-Train a mortgage advisor chatbot with expert-level guidance:
+### Financial Advisory LLM (Example Domain)
+Train a financial advisor chatbot with expert-level guidance:
 - Refinance timing decisions
 - Debt consolidation strategies
 - Rate lock recommendations
-- Loan product selection
+- Product selection
 
 ### General Domain Training
 Apply MACA to any domain:
@@ -355,8 +355,7 @@ cd mcp-server && npm run build
 This plugin is part of the rob-sherman-claude-plugins marketplace.
 
 ### Reporting Issues
-- GitHub: https://github.com/robsherman/claude-plugins/issues
-- Email: rob.sherman@highway.ai
+- GitHub: https://github.com/robsherman/claude-maca/issues
 
 ### Contributing Code
 1. Fork the repository
@@ -380,7 +379,7 @@ Based on the research paper:
 *Meta AI, Meta Superintelligence Labs*
 *arXiv:2509.15172v2, September 2025*
 
-Developed for Highway.ai's mortgage advisory LLM training.
+Developed as an open-source research implementation of the MACA framework.
 
 ---
 

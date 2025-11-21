@@ -1,0 +1,14 @@
+[
+  {
+    "id": "placeholder_001",
+    "prompt": "REPLACE THIS: Add your first domain-specific question here",
+    "chosen": "REPLACE THIS: Add the high-quality, expert-level response that demonstrates the reasoning and depth you want your model to learn",
+    "rejected": "REPLACE THIS: Add a lower-quality, superficial response that represents what the model should learn to avoid",
+    "metadata": {
+      "category": "your_category",
+      "difficulty": "advanced",
+      "debate_worthy": true,
+      "notes": "Delete this placeholder and add your real questions"
+    }
+  }
+]

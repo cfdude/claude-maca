@@ -179,21 +179,20 @@ Read the source code to learn! Start with:
 - **0.5 - 0.7**: Moderate agreement, review manually
 - **< 0.5**: Low agreement, discard or flag as ambiguous
 
-## Integration with Highway.ai
+## Example Domain: Financial Advisory
 
-This MCP server generates training data for Highway.ai's mortgage advisory LLM.
+The examples in this documentation use a mortgage advisory domain, but MACA works with any domain:
 
-**Source Material**: CMA (Certified Mortgage Advisor) Book
-**Training Categories**:
-- Mortgage basics
-- Refinancing decisions
-- Debt management strategies
-- Rate lock timing
-- Economic analysis
+**Example Training Categories**:
+- Domain basics and terminology
+- Decision-making scenarios
+- Strategy recommendations
+- Timing and market analysis
+- Complex multi-factor analysis
 
 **Target Model**: qwen2.5:3b or llama3.2:3b
 **Training Method**: DPO (Direct Preference Optimization) with LoRA
-**Deployment**: Ollama server → Highway.ai SaaS API
+**Deployment**: Ollama server → Your API
 
 ## Research Citation
 
@@ -244,7 +243,7 @@ npm run inspect
 3. Generate 100-200 DPO pairs for training dataset
 4. Fine-tune qwen2.5:3b with DPO
 5. Evaluate improvement on test set
-6. Deploy to Highway.ai production
+6. Deploy to production
 
 ---
 

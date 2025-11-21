@@ -1,0 +1,18 @@
+=== PreCompact Context Preservation 2025-11-19T13:02:43-08:00 ===
+
+Project: maca
+Working Directory: /Users/robsherman/Downloads/maca
+
+Conversation Summary:
+No summary available
+
+Active Tasks:
+
+
+Current Focus:
+No focus identified
+
+=== Hook Input Data ===
+{"session_id":"4552a8ac-23e0-4c5b-82c0-20d55c763275","transcript_path":"/Users/robsherman/.claude/projects/-Users-robsherman-Downloads-maca/4552a8ac-23e0-4c5b-82c0-20d55c763275.jsonl","cwd":"/Users/robsherman/Downloads/maca","hook_event_name":"PreCompact","trigger":"auto","custom_instructions":null}
+
+=== End of Context Preservation ===

@@ -53,3 +53,42 @@ extracted_data/full_text.txt
 # images/*.png
 # images/*.jpg
 # images/figures/*.png
+
+# Proprietary content
+proprietary/
+
+# Generated files
+directory_tree.md
+evaluation_output.log
+export_output.log
+
+# User data directories
+data/*
+!data/README.md
+!data/.gitkeep
+
+models/*
+!models/README.md
+!models/.gitkeep
+
+results/*
+!results/README.md
+!results/.gitkeep
+
+# Extracted research papers
+2509.15172v2_files/
+extracted_data/
+
+# Images (user-generated)
+images/*
+!images/README.md
+!images/.gitkeep
+
+# Backup directories
+.claude/backup-*/
+
+# Local training outputs
+training_output.log
+training.log
+*.gguf
+*.safetensors

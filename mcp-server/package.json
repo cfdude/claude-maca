@@ -1,7 +1,7 @@
 {
   "name": "maca-debate-mcp-server",
   "version": "1.0.0",
-  "description": "MACA (Multi-Agent Consensus Alignment) MCP Server for debate-based mortgage LLM training",
+  "description": "MACA (Multi-Agent Consensus Alignment) MCP Server for debate-based LLM training",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -18,10 +18,9 @@
     "alignment",
     "debate",
     "dpo",
-    "mortgage",
     "llm-training"
   ],
-  "author": "Highway.ai",
+  "author": "MACA Research Community",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4"
