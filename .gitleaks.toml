@@ -1,0 +1,36 @@
+# Gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+
+title = "MACA Gitleaks Configuration"
+
+[extend]
+# Extend the default gitleaks config
+useDefault = true
+
+[allowlist]
+description = "Allowlisted files and patterns"
+paths = [
+    '''package-lock\.json$''',
+    '''\.secrets\.baseline$''',
+    '''\.gitleaks\.toml$''',
+]
+
+# Example patterns to allow (add as needed)
+regexes = [
+    # Example API key placeholder patterns
+    '''(?i)YOUR[-_]?API[-_]?KEY''',
+    '''(?i)EXAMPLE[-_]?KEY''',
+    '''(?i)sk-[a-zA-Z0-9]{20}\.\.\.''',
+]
+
+[[rules]]
+id = "example-api-key"
+description = "Example/placeholder API keys"
+regex = '''(?i)(example|test|dummy|fake|placeholder)[-_]?(api[-_]?)?key'''
+tags = ["example", "placeholder"]
+
+[rules.allowlist]
+regexes = [
+    '''(?i)example''',
+    '''(?i)placeholder''',
+]
