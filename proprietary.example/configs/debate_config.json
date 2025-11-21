@@ -1,0 +1,75 @@
+{
+  "_comment": "MACA Debate Configuration - Customize for your domain",
+  "debate_configuration": {
+    "agents": {
+      "count": 5,
+      "_comment_count": "Number of agents (M). Recommended: 3-7. More agents = more diverse reasoning but slower.",
+      
+      "model": "qwen2.5:3b",
+      "_comment_model": "Base model for debates. Options: qwen2.5:3b, llama3:8b, mistral:7b, etc.",
+      
+      "endpoint": "http://localhost:11434",
+      "_comment_endpoint": "Ollama API endpoint. Use local for privacy.",
+      
+      "temperature": 0.9,
+      "_comment_temperature": "Response diversity. 0.7-0.9 recommended. Higher = more diverse.",
+      
+      "max_tokens": 1000
+    },
+    "rounds": {
+      "total": 2,
+      "_comment_total": "Number of debate rounds (R). 2 is standard (independent → peer feedback).",
+      
+      "round_1": {
+        "name": "independent",
+        "description": "Agents respond independently without seeing others' responses",
+        "allow_peer_feedback": false
+      },
+      "round_2": {
+        "name": "peer_feedback",
+        "description": "Agents can see and respond to peer reasoning",
+        "allow_peer_feedback": true
+      }
+    },
+    "consensus": {
+      "calculation_method": "majority_voting",
+      "_comment_method": "How consensus is calculated. majority_voting is standard.",
+      
+      "minimum_threshold": 0.5,
+      "_comment_min": "Minimum consensus to keep debate. 0.5 = at least 50% agreement.",
+      
+      "optimal_range": {
+        "min": 0.6,
+        "max": 0.8,
+        "_comment_range": "Sweet spot for training. Too high (unanimous) = no training signal. Too low = poor quality."
+      }
+    },
+    "filtering": {
+      "keep_unanimous": false,
+      "_comment_unanimous": "If true, keeps 100% consensus debates. Usually false (no training signal).",
+      
+      "keep_ambiguous": false,
+      "_comment_ambiguous": "If true, keeps <50% consensus debates. Usually false (poor quality).",
+      
+      "min_consensus": 0.5,
+      "max_consensus": 0.9,
+      "_comment_range": "Only keep debates with consensus in this range."
+    },
+    "dpo_generation": {
+      "enabled": true,
+      "format": "huggingface_trl",
+      "_comment_format": "Output format. huggingface_trl is standard for training.",
+      
+      "include_metadata": true,
+      "chosen_strategy": "majority_consensus",
+      "rejected_strategy": "minority_opinions"
+    }
+  },
+  "output": {
+    "save_debates": true,
+    "save_dpo_pairs": true,
+    "debate_results_path": "proprietary/data/debate_results.json",
+    "dpo_pairs_path": "proprietary/data/dpo_training_pairs.json",
+    "log_level": "INFO"
+  }
+}

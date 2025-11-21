@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "toolNamePatterns": [
+          "mcp__maca-debate__export_training_data"
+        ],
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-debate-export.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "_comment": "MACA DPO Training Configuration - Customize for your dataset size",
+  "training_configuration": {
+    "model": {
+      "base_model": "Qwen/Qwen2.5-3B",
+      "_comment_base": "HuggingFace model ID. Options: Qwen/Qwen2.5-3B, meta-llama/Llama-3-8B, etc.",
+      
+      "model_type": "causal_lm",
+      "load_in_8bit": false,
+      "load_in_4bit": false,
+      "_comment_quantization": "Set to true for lower memory usage. Slower training.",
+      
+      "device_map": "auto"
+    },
+    "lora": {
+      "enabled": true,
+      "_comment_enabled": "Use LoRA for efficient fine-tuning. Recommended: true",
+      
+      "r": 16,
+      "_comment_r": "LoRA rank. 16 for small datasets (<50 pairs), 32 for large (>100 pairs)",
+      
+      "lora_alpha": 32,
+      "_comment_alpha": "Scaling factor. Typically 2*r",
+      
+      "lora_dropout": 0.1,
+      "target_modules": [
+        "q_proj", "k_proj", "v_proj", "o_proj",
+        "gate_proj", "up_proj", "down_proj"
+      ],
+      "bias": "none",
+      "task_type": "CAUSAL_LM"
+    },
+    "training_args": {
+      "output_dir": "proprietary/results/dpo_training_v1",
+      "_comment_output": "Where to save checkpoints and logs",
+      
+      "num_train_epochs": 2,
+      "_comment_epochs": "2-3 for small datasets, 3-5 for large datasets",
+      
+      "per_device_train_batch_size": 1,
+      "per_device_eval_batch_size": 1,
+      "gradient_accumulation_steps": 4,
+      "_comment_batch": "Effective batch size = batch_size * accumulation_steps",
+      
+      "learning_rate": 1e-06,
+      "_comment_lr": "1e-6 for small datasets (<50 pairs), 5e-6 for large (>100 pairs)",
+      
+      "lr_scheduler_type": "cosine",
+      "warmup_ratio": 0.1,
+      "weight_decay": 0.01,
+      "max_grad_norm": 1.0,
+      "optim": "adamw_torch",
+      "bf16": true,
+      "_comment_bf16": "Use bfloat16 if GPU supports it. Faster training.",
+      
+      "gradient_checkpointing": true,
+      "logging_steps": 5,
+      "eval_strategy": "epoch",
+      "save_strategy": "epoch",
+      "save_total_limit": 2,
+      "load_best_model_at_end": true,
+      "metric_for_best_model": "eval_loss",
+      "greater_is_better": false,
+      "seed": 42,
+      "report_to": "tensorboard",
+      "_comment_tensorboard": "View logs: tensorboard --logdir proprietary/results/dpo_training_v1/runs"
+    },
+    "dpo_args": {
+      "beta": 0.1,
+      "_comment_beta": "DPO temperature. 0.05=subtle, 0.1=standard, 0.2=strong preferences",
+
+      "loss_type": "sigmoid"
+    },
+    "kto_args": {
+      "_comment": "KTO (Kahneman-Tversky Optimization) - Alternative to DPO",
+      "_comment_when_to_use": "Use KTO when you have individual ratings (desirable/undesirable) rather than paired comparisons. Use DPO when you have natural pairs from debates.",
+
+      "beta": 0.1,
+      "_comment_beta": "KTO temperature parameter. Similar to DPO beta.",
+
+      "desirable_weight": 1.0,
+      "undesirable_weight": 1.0,
+      "_comment_weights": "Adjust if you have class imbalance. E.g., if 80% desirable, set undesirable_weight=1.5"
+    },
+    "dataset": {
+      "train_file": "proprietary/data/dpo_train.jsonl",
+      "validation_file": "proprietary/data/dpo_val.jsonl",
+      "train_val_split": 0.8,
+      "_comment_split": "80% train, 20% validation. Adjust if needed.",
+      
+      "max_length": 2048
+    },
+    "early_stopping": {
+      "enabled": true,
+      "_comment_enabled": "Stop if validation loss stops improving. Prevents overfitting.",
+      
+      "patience": 1,
+      "_comment_patience": "Number of epochs to wait before stopping",
+      
+      "threshold": 0.01
+    }
+  },
+  "export": {
+    "save_lora_adapters": true,
+    "merge_and_save": true,
+    "_comment_merge": "Save both LoRA adapters and merged model",
+    
+    "export_to_ollama": true,
+    "ollama_model_name": "your-domain-model:v1",
+    "_comment_ollama": "Name for Ollama model. Format: name:version"
+  },
+  "notes": {
+    "_comment_small_datasets": "For <50 pairs: lr=1e-6, epochs=2-3, lora_r=16",
+    "_comment_large_datasets": "For >100 pairs: lr=5e-6, epochs=3-5, lora_r=32",
+    "_comment_beta": "Try beta=0.05 for subtle, 0.2 for strong preferences",
+    "_comment_overfitting": "If train loss << val loss: reduce epochs, reduce lr, or get more data",
+    "_comment_dpo_vs_kto": "DPO: Use for debate pairs (chosen vs rejected). KTO: Use for individual ratings (desirable vs undesirable). Both produce similar results, choose based on your data format."
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "training_configuration": {
+    "model": {
+      "base_model": "Qwen/Qwen2.5-3B",
+      "model_type": "causal_lm",
+      "load_in_8bit": false,
+      "load_in_4bit": false,
+      "device_map": "auto"
+    },
+    "lora": {
+      "enabled": true,
+      "r": 16,
+      "lora_alpha": 32,
+      "lora_dropout": 0.1,
+      "target_modules": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ],
+      "bias": "none",
+      "task_type": "CAUSAL_LM"
+    },
+    "training_args": {
+      "output_dir": "./results/dpo_training",
+      "num_train_epochs": 2,
+      "per_device_train_batch_size": 1,
+      "per_device_eval_batch_size": 1,
+      "gradient_accumulation_steps": 4,
+      "learning_rate": 1e-06,
+      "lr_scheduler_type": "cosine",
+      "warmup_ratio": 0.1,
+      "weight_decay": 0.01,
+      "max_grad_norm": 1.0,
+      "optim": "adamw_torch",
+      "bf16": true,
+      "gradient_checkpointing": true,
+      "logging_steps": 5,
+      "eval_strategy": "epoch",
+      "save_strategy": "epoch",
+      "save_total_limit": 2,
+      "load_best_model_at_end": true,
+      "metric_for_best_model": "eval_loss",
+      "greater_is_better": false,
+      "seed": 42,
+      "report_to": "tensorboard"
+    },
+    "dpo_args": {
+      "beta": 0.1,
+      "loss_type": "sigmoid"
+    },
+    "dataset": {
+      "train_file": "data/dpo_train.jsonl",
+      "validation_file": "data/dpo_val.jsonl",
+      "train_val_split": 0.8,
+      "max_length": 2048
+    },
+    "early_stopping": {
+      "enabled": true,
+      "patience": 1,
+      "threshold": 0.01
+    }
+  },
+  "export": {
+    "save_lora_adapters": true,
+    "merge_and_save": true,
+    "export_to_ollama": true,
+    "ollama_model_name": "custom-model:latest"
+  },
+  "notes": {
+    "for_small_datasets": "Use learning_rate <= 1e-6 and num_train_epochs <= 3 to prevent overfitting",
+    "for_large_datasets": "Can increase learning_rate to 5e-6 and epochs to 3-5",
+    "lora_configuration": "r=16 is conservative, increase to 32 for larger datasets",
+    "beta_values": "0.1 is standard, try 0.05 for subtle preferences or 0.2 for strong preferences"
+  }
+}

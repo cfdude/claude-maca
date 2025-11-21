@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "maca-debate": {
+      "command": "node",
+      "args": [
+        "./mcp-server/dist/index.js"
+      ],
+      "env": {}
+    }
+  }
+}
