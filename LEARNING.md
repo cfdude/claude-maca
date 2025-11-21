@@ -2,9 +2,9 @@
 
 ## Introduction
 
-This guide is designed for someone who works extensively with AI but has never trained a model before. We'll go from **absolute basics to production deployment** using the MACA research applied to your mortgage/home loan business domain.
+This guide is designed for someone who works extensively with AI but has never trained a model before. We'll go from **absolute basics to production deployment** using the MACA research framework.
 
-**Real-World Goal**: Train an LLM that gives consistent, accurate advice about home loans, refinancing, and mortgage products for Highway.ai customers.
+**Real-World Goal**: Train an LLM that gives consistent, accurate responses through multi-agent consensus alignment. Examples in this guide use a mortgage/financial advisory domain, but the techniques apply to any domain.
 
 ---
 
@@ -81,11 +81,11 @@ Training: ✅ Reinforce consensus   ❌ Discourage wrong answer
 
 **Result**: Model learns to give consistent, nuanced answers!
 
-### Why This Matters for Highway.ai
+### Why This Matters for Domain-Specific Applications
 
-Your loan officers need LLMs that:
+Production LLMs need to:
 1. **Don't contradict themselves** (same question = same core answer)
-2. **Handle edge cases** (FHA vs. conventional loans)
+2. **Handle edge cases** (domain-specific nuances)
 3. **Give confident, correct advice** (not random guessing)
 
 MACA directly addresses all three by training on internal consensus.
@@ -611,7 +611,7 @@ plt.savefig('mortgage_maca_results.png', dpi=300)
 
 ---
 
-## Part 6: Deployment to Highway.ai
+## Part 6: Deployment Options
 
 ### Strategy 1: Ollama Server (Simple)
 
@@ -656,7 +656,7 @@ if __name__ == '__main__':
 from huggingface_hub import InferenceClient
 
 client = InferenceClient(
-    model="highway-ai/mortgage-maca-qwen2.5",
+    model="your-org/your-maca-model",
     token="your-hf-token"
 )
 
@@ -669,15 +669,15 @@ response = client.text_generation(
 **Pro**: Scales automatically
 **Con**: Costs per API call
 
-### Strategy 3: Integration with Your SaaS
+### Strategy 3: Integration with Your Application
 
-**For Highway.ai web app**:
+**For web applications**:
 
 ```typescript
-// frontend/src/services/mortgageAI.ts
+// frontend/src/services/domainAI.ts
 
-export async function getMortgageAdvice(question: string) {
-  const response = await fetch('https://api.highway.ai/mortgage-advice', {
+export async function getDomainAdvice(question: string) {
+  const response = await fetch('https://your-api.example.com/advice', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question })
@@ -686,9 +686,9 @@ export async function getMortgageAdvice(question: string) {
   return response.json();
 }
 
-// Usage in your loan officer dashboard
-const advice = await getMortgageAdvice(
-  "Customer has $80k equity on $300k home. Cash-out refi options?"
+// Usage in your application
+const advice = await getDomainAdvice(
+  "Your domain-specific question here"
 );
 
 displayAdvice(advice);
@@ -855,7 +855,7 @@ Once your model works well:
 - Document results
 
 **Phase 5 (Weeks 8+)**: Deployment
-- Integration with Highway.ai
+- Integration with your application
 - Real-world testing
 - Collect feedback
 - Continuous improvement

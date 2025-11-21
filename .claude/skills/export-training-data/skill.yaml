@@ -1,0 +1,10 @@
+name: export-training-data
+description: Export DPO training pairs from completed debates with quality filtering
+instructions: |
+  Export training data from debates:
+  - Filter by consensus strength
+  - Choose format (json, jsonl, huggingface)
+  - Merge with seed dataset
+  - Prepare for DPO fine-tuning
+
+  Usage: /export-training-data --min-consensus 0.7 --format jsonl

@@ -1,0 +1,57 @@
+{
+  "debate_configuration": {
+    "agents": {
+      "count": 5,
+      "model": "qwen2.5:3b",
+      "endpoint": "http://localhost:11434",
+      "temperature": 0.9,
+      "max_tokens": 1000
+    },
+    "rounds": {
+      "total": 2,
+      "round_1": {
+        "name": "independent",
+        "description": "Agents respond independently without seeing others' responses",
+        "allow_peer_feedback": false
+      },
+      "round_2": {
+        "name": "peer_feedback",
+        "description": "Agents can see and respond to peer reasoning",
+        "allow_peer_feedback": true
+      }
+    },
+    "parser": {
+      "domain": "generic",
+      "similarity_threshold": 0.85,
+      "_comment": "Domain options: generic, financial, legal, medical. Similarity threshold (0.0-1.0) for fuzzy answer matching."
+    },
+    "consensus": {
+      "calculation_method": "majority_voting",
+      "minimum_threshold": 0.5,
+      "optimal_range": {
+        "min": 0.6,
+        "max": 0.8
+      }
+    },
+    "filtering": {
+      "keep_unanimous": false,
+      "keep_ambiguous": false,
+      "min_consensus": 0.5,
+      "max_consensus": 0.9
+    },
+    "dpo_generation": {
+      "enabled": true,
+      "format": "huggingface_trl",
+      "include_metadata": true,
+      "chosen_strategy": "majority_consensus",
+      "rejected_strategy": "minority_opinions"
+    }
+  },
+  "output": {
+    "save_debates": true,
+    "save_dpo_pairs": true,
+    "debate_results_path": "data/debate_results.json",
+    "dpo_pairs_path": "data/dpo_pairs.json",
+    "log_level": "INFO"
+  }
+}
