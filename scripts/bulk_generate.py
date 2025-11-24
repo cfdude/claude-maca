@@ -5,10 +5,11 @@ from pathlib import Path
 # Generate comprehensive examples across all modules
 # Target: 113 new examples (total 120 with seed)
 
+
 def create_all_examples():
     examples = []
     id_counter = 8
-    
+
     # MODULE A: Be an Advisor (30 examples)
     module_a_concepts = [
         ("Lump sum mortgage payments", "intermediate", "mortgage_strategy"),
@@ -40,13 +41,13 @@ def create_all_examples():
         ("Loan triangle concept", "beginner", "mortgage_basics"),
         ("True breakeven for points", "advanced", "loan_comparison"),
         ("Refinance timing optimal", "expert", "refinance_strategy"),
-        ("Client communication best practices", "intermediate", "client_advisory")
+        ("Client communication best practices", "intermediate", "client_advisory"),
     ]
-    
+
     for concept, difficulty, category in module_a_concepts:
         examples.append(create_example(id_counter, "A", concept, difficulty, category))
         id_counter += 1
-    
+
     # MODULE B: Understanding Markets (25 examples)
     module_b_concepts = [
         ("Bond price and yield inverse relationship", "intermediate", "interest_rates_markets"),
@@ -73,14 +74,14 @@ def create_all_examples():
         ("Spread between Treasury and mortgage rates", "advanced", "interest_rates_markets"),
         ("Investor demand for mortgages", "intermediate", "interest_rates_markets"),
         ("Rate sheet pricing", "intermediate", "rate_lock_strategy"),
-        ("Market open/close timing", "beginner", "rate_lock_strategy")
+        ("Market open/close timing", "beginner", "rate_lock_strategy"),
     ]
-    
+
     for concept, difficulty, category in module_b_concepts:
         examples.append(create_example(id_counter, "B", concept, difficulty, category))
         id_counter += 1
-    
-    # MODULE C: Economic Reports (20 examples) 
+
+    # MODULE C: Economic Reports (20 examples)
     module_c_concepts = [
         ("BLS Jobs Report impact", "intermediate", "economic_analysis"),
         ("ADP vs BLS differences", "intermediate", "economic_analysis"),
@@ -101,13 +102,13 @@ def create_all_examples():
         ("Retail sales significance", "beginner", "economic_analysis"),
         ("Consumer confidence indices", "beginner", "economic_analysis"),
         ("Producer Price Index", "intermediate", "economic_analysis"),
-        ("Economic calendar for rate locks", "advanced", "rate_lock_strategy")
+        ("Economic calendar for rate locks", "advanced", "rate_lock_strategy"),
     ]
-    
+
     for concept, difficulty, category in module_c_concepts:
         examples.append(create_example(id_counter, "C", concept, difficulty, category))
         id_counter += 1
-    
+
     # MODULE D: Fed and Recession (18 examples)
     module_d_concepts = [
         ("Fed Funds Rate vs mortgage rates", "advanced", "fed_policy"),
@@ -127,13 +128,13 @@ def create_all_examples():
         ("Fed dual mandate", "beginner", "fed_policy"),
         ("TINA phenomenon", "intermediate", "fed_policy"),
         ("Fed independence", "intermediate", "fed_policy"),
-        ("Central banking purpose", "beginner", "fed_policy")
+        ("Central banking purpose", "beginner", "fed_policy"),
     ]
-    
+
     for concept, difficulty, category in module_d_concepts:
         examples.append(create_example(id_counter, "D", concept, difficulty, category))
         id_counter += 1
-    
+
     # MODULE E: Technical Analysis (20 examples)
     module_e_concepts = [
         ("Support and resistance levels", "advanced", "technical_analysis"),
@@ -155,18 +156,19 @@ def create_all_examples():
         ("Volume analysis", "intermediate", "technical_analysis"),
         ("Breakout trading", "advanced", "technical_analysis"),
         ("False signals", "advanced", "technical_analysis"),
-        ("Technical analysis timing", "expert", "rate_lock_strategy")
+        ("Technical analysis timing", "expert", "rate_lock_strategy"),
     ]
-    
+
     for concept, difficulty, category in module_e_concepts:
         examples.append(create_example(id_counter, "E", concept, difficulty, category))
         id_counter += 1
-    
+
     return examples
+
 
 def create_example(id_num, module, concept, difficulty, category):
     """Create a training example with appropriate depth based on difficulty"""
-    
+
     # Generate prompt
     if "vs" in concept or "vs." in concept:
         prompt = f"What's the difference between {concept}?"
@@ -178,22 +180,22 @@ def create_example(id_num, module, concept, difficulty, category):
         prompt = f"How does {concept.replace(' impact', '').replace(' effect', '')} affect mortgage rates?"
     else:
         prompt = f"Can you explain {concept} to help me advise clients?"
-    
+
     # Generate chosen response based on difficulty
     if difficulty == "beginner":
-        chosen = f"[{concept.upper()}]\n\n**Simple Explanation:**\nThis concept is important for helping clients understand mortgages. {concept} relates to how mortgage rates and products work.\n\n**Why It Matters:**\nClients need to know this to make informed decisions.\n\n**Example:**\n[Specific example with numbers]\n\n**What to Tell Clients:**\n\"[Simple client-facing explanation]\"" 
-        
+        chosen = f'[{concept.upper()}]\n\n**Simple Explanation:**\nThis concept is important for helping clients understand mortgages. {concept} relates to how mortgage rates and products work.\n\n**Why It Matters:**\nClients need to know this to make informed decisions.\n\n**Example:**\n[Specific example with numbers]\n\n**What to Tell Clients:**\n"[Simple client-facing explanation]"'
+
     elif difficulty == "intermediate":
-        chosen = f"[{concept.upper()}]\n\n**Detailed Explanation:**\nThis is a critical concept for mortgage advisors. Understanding {concept} helps you provide strategic guidance to clients.\n\n**How It Works:**\n[Detailed mechanics]\n\n**When to Apply:**\n✅ [Scenario 1]\n✅ [Scenario 2]\n\n**When Not To:**\n❌ [Scenario 1]\n❌ [Scenario 2]\n\n**Client Communication:**\n\"[Strategic explanation]\"\n\n**Pro Tip:**\n[Advanced consideration]"
-        
+        chosen = f'[{concept.upper()}]\n\n**Detailed Explanation:**\nThis is a critical concept for mortgage advisors. Understanding {concept} helps you provide strategic guidance to clients.\n\n**How It Works:**\n[Detailed mechanics]\n\n**When to Apply:**\n✅ [Scenario 1]\n✅ [Scenario 2]\n\n**When Not To:**\n❌ [Scenario 1]\n❌ [Scenario 2]\n\n**Client Communication:**\n"[Strategic explanation]"\n\n**Pro Tip:**\n[Advanced consideration]'
+
     elif difficulty == "advanced":
         chosen = f"[{concept.upper()}]\n\n**Comprehensive Analysis:**\n{concept} is a sophisticated concept requiring deep understanding.\n\n**The Mechanics:**\n[Detailed technical explanation]\n\n**Multiple Scenarios:**\nScenario 1: [With calculations]\nScenario 2: [With calculations]\n\n**Trade-offs:**\n[Pros and cons analysis]\n\n**Decision Framework:**\n1. [Step 1]\n2. [Step 2]\n3. [Step 3]\n\n**Client Communication Strategies:**\n[Multiple approaches]\n\n**Advanced Insights:**\n[Competitive edge information]"
-        
+
     else:  # expert
         chosen = f"[{concept.upper()}]\n\n**Expert-Level Analysis:**\nThis advanced concept separates good advisors from great ones.\n\n**Deep Technical Explanation:**\n[Comprehensive mechanics]\n\n**Multiple Perspectives:**\nPerspective 1: [Analysis]\nPerspective 2: [Analysis]\n\n**Edge Cases:**\n[Unusual scenarios]\n\n**Strategic Framework:**\n[Multi-step decision process]\n\n**Market Analysis Integration:**\n[How this fits with market movements]\n\n**Advanced Client Scenarios:**\n[Complex situations]\n\n**Competitive Differentiation:**\n[What sets CMAs apart]"
-    
+
     rejected = f"{concept} is important in mortgages. It affects rates and client decisions."
-    
+
     return {
         "id": f"cma_{id_num:03d}",
         "prompt": prompt,
@@ -207,26 +209,29 @@ def create_example(id_num, module, concept, difficulty, category):
             "line_reference": "",
             "debate_worthy": difficulty in ["advanced", "expert"],
             "client_facing": True,
-            "requires_calculation": category in ["refinance_strategy", "mortgage_strategy", "loan_comparison"],
-            "requires_market_analysis": category in ["rate_lock_strategy", "interest_rates_markets"]
-        }
+            "requires_calculation": category
+            in ["refinance_strategy", "mortgage_strategy", "loan_comparison"],
+            "requires_market_analysis": category
+            in ["rate_lock_strategy", "interest_rates_markets"],
+        },
     }
+
 
 if __name__ == "__main__":
     print("Generating comprehensive CMA training dataset...")
     examples = create_all_examples()
     print(f"Generated {len(examples)} examples")
-    
+
     # Save to file
     output_file = Path("data/expanded_dataset_bulk.json")
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         json.dump(examples, f, indent=2)
-    
+
     print(f"Saved to {output_file}")
-    print(f"\nDistribution:")
-    print(f"  Module A: 30 examples")
-    print(f"  Module B: 25 examples")
-    print(f"  Module C: 20 examples")
-    print(f"  Module D: 18 examples")
-    print(f"  Module E: 20 examples")
-    print(f"  Total new: 113 examples")
+    print("\nDistribution:")
+    print("  Module A: 30 examples")
+    print("  Module B: 25 examples")
+    print("  Module C: 20 examples")
+    print("  Module D: 18 examples")
+    print("  Module E: 20 examples")
+    print("  Total new: 113 examples")

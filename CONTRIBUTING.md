@@ -84,7 +84,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # Install development dependencies
-pip install pytest black flake8 mypy
+pip install -r requirements-dev.txt
 
 # Build MCP server
 cd mcp-server
@@ -116,11 +116,11 @@ We follow [PEP 8](https://peps.python.org/pep-0008/) with these specific require
 
 **Formatting**:
 ```bash
-# Format code with black (line length: 100)
-black --line-length 100 scripts/
+# Format code with Ruff (uses ruff.toml config)
+ruff format scripts/ tests/
 
-# Check linting
-flake8 scripts/ --max-line-length 100
+# Check linting with Ruff
+ruff check scripts/ tests/
 
 # Type checking
 mypy scripts/
@@ -243,8 +243,8 @@ def test_fuzzy_matching_threshold():
 
 ```bash
 # Run all checks
-black --check scripts/
-flake8 scripts/ --max-line-length 100
+ruff format --check scripts/ tests/
+ruff check scripts/ tests/
 mypy scripts/
 pytest tests/ --cov=scripts
 ```
@@ -275,8 +275,8 @@ pytest tests/ --cov=scripts
 4. **Run all tests**:
    ```bash
    pytest tests/
-   black --check scripts/
-   flake8 scripts/
+   ruff format --check scripts/ tests/
+   ruff check scripts/ tests/
    ```
 
 ### Commit Message Format

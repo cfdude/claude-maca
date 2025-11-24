@@ -92,3 +92,15 @@ training_output.log
 training.log
 *.gguf
 *.safetensors
+
+# Testing and coverage
+.coverage
+htmlcov/
+.pytest_cache/
+coverage.xml
+
+# MyPy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/

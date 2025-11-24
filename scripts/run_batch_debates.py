@@ -10,15 +10,15 @@ Based on validation recommendations:
 """
 
 import json
-import time
 import sys
-import urllib.request
+import time
 import urllib.error
-from pathlib import Path
-from typing import Dict, List, Any
+import urllib.request
 
 # Import answer parser for improved consensus detection
 from parser import AnswerParser
+from pathlib import Path
+from typing import Any, Dict, List
 
 # Configuration
 OLLAMA_URL = "http://localhost:11434"
@@ -69,33 +69,32 @@ class DebateBatchProcessor:
     def call_ollama(self, prompt: str) -> Dict[str, Any]:
         """Call Ollama API with configured temperature."""
         try:
-            data = json.dumps({
-                "model": MODEL,
-                "prompt": prompt,
-                "stream": False,
-                "options": {
-                    "temperature": TEMPERATURE,
+            data = json.dumps(
+                {
+                    "model": MODEL,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": TEMPERATURE,
+                    },
                 }
-            }).encode('utf-8')
+            ).encode("utf-8")
 
-            req = urllib.request.Request(
+            req = urllib.request.Request(  # noqa: S310
                 f"{OLLAMA_URL}/api/generate",
                 data=data,
-                headers={'Content-Type': 'application/json'}
+                headers={"Content-Type": "application/json"},
             )
 
-            with urllib.request.urlopen(req, timeout=120) as response:
-                result = json.loads(response.read().decode('utf-8'))
+            with urllib.request.urlopen(req, timeout=120) as response:  # noqa: S310
+                result = json.loads(response.read().decode("utf-8"))
                 return {
                     "success": True,
                     "response": result.get("response", ""),
-                    "tokens": result.get("eval_count", 0)
+                    "tokens": result.get("eval_count", 0),
                 }
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     def extract_answer(self, response: str) -> str:
         """Extract a clear answer from agent response."""
@@ -112,7 +111,7 @@ class DebateBatchProcessor:
             return "no"
 
         # Default to analyzing first sentence
-        first_sentence = response.split('.')[0].lower()
+        first_sentence = response.split(".")[0].lower()
         if "wait" in first_sentence:
             return "wait"
         if "refinance" in first_sentence:
@@ -124,7 +123,9 @@ class DebateBatchProcessor:
 
         return "unclear"
 
-    def run_debate_round(self, question: str, round_num: int, peer_responses: List[Dict] = None) -> List[Dict]:
+    def run_debate_round(
+        self, question: str, round_num: int, peer_responses: List[Dict] = None
+    ) -> List[Dict]:
         """Run a single debate round with all agents."""
         responses = []
 
@@ -139,10 +140,12 @@ class DebateBatchProcessor:
 Provide a clear, well-reasoned answer with your recommendation. Start with your clear position, then explain your reasoning."""
             else:
                 # Round 2: With peer feedback
-                peer_summary = "\n\n".join([
-                    f"- {r['agent_name']} said \"{r['answer']}\": {r['reasoning'][:200]}..."
-                    for r in peer_responses
-                ])
+                peer_summary = "\n\n".join(
+                    [
+                        f'- {r["agent_name"]} said "{r["answer"]}": {r["reasoning"][:200]}...'
+                        for r in peer_responses
+                    ]
+                )
                 prompt = f"""You are a domain expert analyzing this question:
 
 {question}
@@ -163,13 +166,15 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
             reasoning = result["response"]
             answer = self.extract_answer(reasoning)
 
-            responses.append({
-                "agent_id": agent["id"],
-                "agent_name": agent["name"],
-                "answer": answer,
-                "reasoning": reasoning,
-                "tokens": result["tokens"]
-            })
+            responses.append(
+                {
+                    "agent_id": agent["id"],
+                    "agent_name": agent["name"],
+                    "answer": answer,
+                    "reasoning": reasoning,
+                    "tokens": result["tokens"],
+                }
+            )
 
             print(f"[{answer}]")
 
@@ -217,7 +222,7 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
             "consensus_strength": consensus_strength,
             "answer_distribution": answer_counts,
             "unique_answers": len(answer_counts),
-            "answer_groups": answer_groups  # For debugging/analysis
+            "answer_groups": answer_groups,  # For debugging/analysis
         }
 
     def generate_dpo_pairs(self, debate_result: Dict) -> List[Dict]:
@@ -245,19 +250,21 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
             # Pick the best chosen response (longest reasoning as proxy for quality)
             chosen = max(chosen_responses, key=lambda x: len(x["reasoning"]))
 
-            pairs.append({
-                "prompt": debate_result["question"],
-                "chosen": chosen["reasoning"],
-                "rejected": rejected["reasoning"],
-                "metadata": {
-                    "debate_id": debate_result["debate_id"],
-                    "consensus_strength": consensus["consensus_strength"],
-                    "category": debate_result["metadata"]["category"],
-                    "difficulty": debate_result["metadata"]["difficulty"],
-                    "majority_answer": majority_answer,
-                    "rejected_answer": rejected["answer"]
+            pairs.append(
+                {
+                    "prompt": debate_result["question"],
+                    "chosen": chosen["reasoning"],
+                    "rejected": rejected["reasoning"],
+                    "metadata": {
+                        "debate_id": debate_result["debate_id"],
+                        "consensus_strength": consensus["consensus_strength"],
+                        "category": debate_result["metadata"]["category"],
+                        "difficulty": debate_result["metadata"]["difficulty"],
+                        "majority_answer": majority_answer,
+                        "rejected_answer": rejected["answer"],
+                    },
                 }
-            })
+            )
 
         return pairs
 
@@ -269,7 +276,9 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
 
         print(f"\n[{index}/{total}] Debate: {debate_id}")
         print(f"Question: {question[:80]}...")
-        print(f"Category: {metadata.get('category', 'unknown')} | Difficulty: {metadata.get('difficulty', 'unknown')}")
+        print(
+            f"Category: {metadata.get('category', 'unknown')} | Difficulty: {metadata.get('difficulty', 'unknown')}"
+        )
 
         debate_result = {
             "debate_id": debate_id,
@@ -277,7 +286,7 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
             "metadata": metadata,
             "rounds": [],
             "consensus_progression": [],
-            "start_time": time.time()
+            "start_time": time.time(),
         }
 
         # Round 1: Independent responses
@@ -290,7 +299,9 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
         debate_result["rounds"].append(round1_responses)
         debate_result["consensus_progression"].append(round1_consensus)
 
-        print(f"  Consensus: {round1_consensus['consensus_strength']:.1%} on '{round1_consensus['majority_answer']}'")
+        print(
+            f"  Consensus: {round1_consensus['consensus_strength']:.1%} on '{round1_consensus['majority_answer']}'"
+        )
 
         # Round 2: With peer feedback
         print("\nRound 2 (With Peer Feedback):")
@@ -302,10 +313,14 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
         debate_result["rounds"].append(round2_responses)
         debate_result["consensus_progression"].append(round2_consensus)
 
-        print(f"  Consensus: {round2_consensus['consensus_strength']:.1%} on '{round2_consensus['majority_answer']}'")
+        print(
+            f"  Consensus: {round2_consensus['consensus_strength']:.1%} on '{round2_consensus['majority_answer']}'"
+        )
 
         # Calculate convergence
-        consensus_change = round2_consensus["consensus_strength"] - round1_consensus["consensus_strength"]
+        consensus_change = (
+            round2_consensus["consensus_strength"] - round1_consensus["consensus_strength"]
+        )
         if consensus_change > 0.01:
             convergence = "converged"
         elif consensus_change < -0.01:
@@ -337,7 +352,9 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
     def update_metrics(self, debate_result: Dict, filter_decision: str):
         """Update running metrics."""
         self.metrics["completed_debates"] += 1
-        self.metrics["total_consensus_sum"] += debate_result["final_consensus"]["consensus_strength"]
+        self.metrics["total_consensus_sum"] += debate_result["final_consensus"][
+            "consensus_strength"
+        ]
 
         if filter_decision == "unanimous":
             self.metrics["filtered_out_unanimous"] += 1
@@ -356,14 +373,11 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
     def save_progress(self):
         """Save current results and training pairs to disk."""
         # Save debate results
-        with open(RESULTS_FILE, 'w') as f:
-            json.dump({
-                "results": self.results,
-                "metrics": self.metrics
-            }, f, indent=2)
+        with open(RESULTS_FILE, "w") as f:
+            json.dump({"results": self.results, "metrics": self.metrics}, f, indent=2)
 
         # Save DPO training pairs
-        with open(TRAINING_PAIRS_FILE, 'w') as f:
+        with open(TRAINING_PAIRS_FILE, "w") as f:
             json.dump(self.training_pairs, f, indent=2)
 
         print(f"\n✓ Progress saved to {RESULTS_FILE}")
@@ -376,14 +390,14 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
 
         self.metrics["total_debates"] = len(questions)
 
-        print(f"\n{'='*80}")
-        print(f"MACA Batch Debate Processing")
-        print(f"{'='*80}")
+        print(f"\n{'=' * 80}")
+        print("MACA Batch Debate Processing")
+        print(f"{'=' * 80}")
         print(f"Total questions: {len(questions)}")
         print(f"Agents: {NUM_AGENTS} (M=5)")
         print(f"Temperature: {TEMPERATURE}")
         print(f"Model: {MODEL}")
-        print(f"{'='*80}\n")
+        print(f"{'=' * 80}\n")
 
         start_time = time.time()
 
@@ -393,7 +407,7 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
                 # Run debate
                 debate_result = self.run_single_debate(question_data, idx, len(questions))
                 if not debate_result:
-                    print(f"✗ Debate failed, skipping...")
+                    print("✗ Debate failed, skipping...")
                     continue
 
                 # Apply quality filtering
@@ -452,53 +466,67 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
         rate = current / elapsed
         remaining = (total - current) / rate if rate > 0 else 0
 
-        print(f"\n{'─'*80}")
-        print(f"Progress: {current}/{total} ({current/total:.1%})")
-        print(f"Time elapsed: {elapsed/60:.1f} min | Estimated remaining: {remaining/60:.1f} min")
-        print(f"Avg consensus: {self.metrics['total_consensus_sum']/current:.2f}")
-        print(f"Convergence: {self.metrics['convergence_count']}/{current} ({self.metrics['convergence_count']/current:.1%})")
+        print(f"\n{'─' * 80}")
+        print(f"Progress: {current}/{total} ({current / total:.1%})")
+        print(
+            f"Time elapsed: {elapsed / 60:.1f} min | Estimated remaining: {remaining / 60:.1f} min"
+        )
+        print(f"Avg consensus: {self.metrics['total_consensus_sum'] / current:.2f}")
+        print(
+            f"Convergence: {self.metrics['convergence_count']}/{current} ({self.metrics['convergence_count'] / current:.1%})"
+        )
         print(f"DPO pairs: {self.metrics['dpo_pairs_generated']}")
-        print(f"{'─'*80}\n")
+        print(f"{'─' * 80}\n")
 
     def _print_final_report(self, total_time: float):
         """Print comprehensive final report."""
         m = self.metrics
 
-        print(f"\n\n{'='*80}")
-        print(f"BATCH PROCESSING COMPLETE")
-        print(f"{'='*80}\n")
+        print(f"\n\n{'=' * 80}")
+        print("BATCH PROCESSING COMPLETE")
+        print(f"{'=' * 80}\n")
 
-        print(f"Time & Performance:")
-        print(f"  Total time: {total_time/60:.1f} minutes ({total_time/3600:.1f} hours)")
-        print(f"  Avg time per debate: {total_time/m['completed_debates']:.1f} seconds")
-        print(f"  Debates per hour: {m['completed_debates']/(total_time/3600):.1f}")
+        print("Time & Performance:")
+        print(f"  Total time: {total_time / 60:.1f} minutes ({total_time / 3600:.1f} hours)")
+        print(f"  Avg time per debate: {total_time / m['completed_debates']:.1f} seconds")
+        print(f"  Debates per hour: {m['completed_debates'] / (total_time / 3600):.1f}")
 
-        print(f"\nDebate Results:")
+        print("\nDebate Results:")
         print(f"  Total debates: {m['total_debates']}")
         print(f"  Completed: {m['completed_debates']}")
         print(f"  Failed: {m['total_debates'] - m['completed_debates']}")
 
-        print(f"\nQuality Filtering:")
-        print(f"  Kept for training: {m['kept_for_training']} ({m['kept_for_training']/m['completed_debates']:.1%})")
-        print(f"  Filtered (unanimous): {m['filtered_out_unanimous']} ({m['filtered_out_unanimous']/m['completed_debates']:.1%})")
-        print(f"  Filtered (ambiguous): {m['filtered_out_ambiguous']} ({m['filtered_out_ambiguous']/m['completed_debates']:.1%})")
+        print("\nQuality Filtering:")
+        print(
+            f"  Kept for training: {m['kept_for_training']} ({m['kept_for_training'] / m['completed_debates']:.1%})"
+        )
+        print(
+            f"  Filtered (unanimous): {m['filtered_out_unanimous']} ({m['filtered_out_unanimous'] / m['completed_debates']:.1%})"
+        )
+        print(
+            f"  Filtered (ambiguous): {m['filtered_out_ambiguous']} ({m['filtered_out_ambiguous'] / m['completed_debates']:.1%})"
+        )
 
-        print(f"\nConsensus Analysis:")
+        print("\nConsensus Analysis:")
         print(f"  Average consensus: {m['avg_consensus']:.2f}")
         print(f"  Converged: {m['convergence_count']} ({m['convergence_rate']:.1%})")
-        print(f"  Diverged: {m['divergence_count']} ({m['divergence_count']/m['completed_debates']:.1%})")
-        print(f"  No change: {m['no_change_count']} ({m['no_change_count']/m['completed_debates']:.1%})")
+        print(
+            f"  Diverged: {m['divergence_count']} ({m['divergence_count'] / m['completed_debates']:.1%})"
+        )
+        print(
+            f"  No change: {m['no_change_count']} ({m['no_change_count'] / m['completed_debates']:.1%})"
+        )
 
-        print(f"\nDPO Training Pairs:")
+        print("\nDPO Training Pairs:")
         print(f"  Total pairs generated: {m['dpo_pairs_generated']}")
-        print(f"  Pairs per kept debate: {m['dpo_pairs_generated']/m['kept_for_training']:.1f}")
+        print(f"  Pairs per kept debate: {m['dpo_pairs_generated'] / m['kept_for_training']:.1f}")
         print(f"  Generation rate: {m['dpo_generation_rate']:.1%}")
 
-        print(f"\nTarget Achievement:")
+        print("\nTarget Achievement:")
         targets = [
-            ("Convergence rate >50%", m['convergence_rate'], 0.5),
-            ("DPO generation rate >60%", m['dpo_generation_rate'], 0.6),
-            ("Avg consensus 0.6-0.8", m['avg_consensus'], None),
+            ("Convergence rate >50%", m["convergence_rate"], 0.5),
+            ("DPO generation rate >60%", m["dpo_generation_rate"], 0.6),
+            ("Avg consensus 0.6-0.8", m["avg_consensus"], None),
         ]
 
         for name, actual, target in targets:
@@ -509,10 +537,10 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
                 status = "✓" if actual >= target else "✗"
                 print(f"  {status} {name}: {actual:.1%} (target: {target:.1%})")
 
-        print(f"\nOutput Files:")
+        print("\nOutput Files:")
         print(f"  Debate results: {RESULTS_FILE}")
         print(f"  DPO training pairs: {TRAINING_PAIRS_FILE}")
-        print(f"\n{'='*80}\n")
+        print(f"\n{'=' * 80}\n")
 
 
 if __name__ == "__main__":

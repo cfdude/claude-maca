@@ -5,19 +5,20 @@ Orchestrate test debates to validate the system
 """
 
 import json
-import requests
-from typing import List, Dict, Any
 from collections import Counter
-from pathlib import Path
-import sys
 
 # Import answer parser for improved consensus detection
 from parser import AnswerParser
+from pathlib import Path
+from typing import Any, Dict, List
+
+import requests
 
 # Ollama endpoint
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "qwen2.5:3b"
 DOMAIN = "generic"  # Domain for answer normalization: generic, financial, legal, medical
+
 
 class DebateOrchestrator:
     def __init__(self, domain: str = DOMAIN):
@@ -28,12 +29,7 @@ class DebateOrchestrator:
 
     def register_agent(self, agent_id: str, name: str) -> Dict[str, Any]:
         """Register an agent for debates"""
-        agent = {
-            "id": agent_id,
-            "name": name,
-            "model": MODEL,
-            "endpoint": OLLAMA_URL
-        }
+        agent = {"id": agent_id, "name": name, "model": MODEL, "endpoint": OLLAMA_URL}
         self.agents.append(agent)
         print(f"✅ Registered {name} (ID: {agent_id}) using {MODEL}")
         return agent
@@ -46,8 +42,8 @@ class DebateOrchestrator:
             "stream": False,
             "options": {
                 "temperature": temperature,
-                "seed": None  # Random seed for diversity
-            }
+                "seed": None,  # Random seed for diversity
+            },
         }
 
         try:
@@ -73,7 +69,10 @@ class DebateOrchestrator:
             return "30-year"
         elif "15-year" in reasoning_lower and "30-year" not in reasoning_lower:
             return "15-year"
-        elif "lock" in reasoning_lower and ("float" not in reasoning_lower or reasoning_lower.index("lock") < reasoning_lower.index("float")):
+        elif "lock" in reasoning_lower and (
+            "float" not in reasoning_lower
+            or reasoning_lower.index("lock") < reasoning_lower.index("float")
+        ):
             return "lock"
         elif "float" in reasoning_lower:
             return "float"
@@ -82,10 +81,7 @@ class DebateOrchestrator:
             return "unclear"
 
     def start_debate(
-        self,
-        debate_id: str,
-        question: str,
-        metadata: Dict[str, Any]
+        self, debate_id: str, question: str, metadata: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Start a new debate"""
         debate = {
@@ -94,19 +90,18 @@ class DebateOrchestrator:
             "metadata": metadata,
             "rounds": [],
             "status": "active",
-            "consensus": None
+            "consensus": None,
         }
         self.debates[debate_id] = debate
         print(f"\n📊 Starting Debate: {debate_id}")
         print(f"Question: {question}")
-        print(f"Category: {metadata.get('category', 'N/A')} | Difficulty: {metadata.get('difficulty', 'N/A')}")
+        print(
+            f"Category: {metadata.get('category', 'N/A')} | Difficulty: {metadata.get('difficulty', 'N/A')}"
+        )
         return debate
 
     def run_round(
-        self,
-        debate_id: str,
-        round_num: int,
-        previous_responses: List[Dict[str, Any]] = None
+        self, debate_id: str, round_num: int, previous_responses: List[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         """Run a single debate round"""
         debate = self.debates[debate_id]
@@ -148,15 +143,12 @@ Having seen your peers' reasoning, provide your refined answer:"""
                 "agent_name": agent["name"],
                 "round": round_num,
                 "reasoning": reasoning,
-                "answer": answer
+                "answer": answer,
             }
             responses.append(response)
 
         # Store round results
-        round_data = {
-            "round_num": round_num,
-            "responses": responses
-        }
+        round_data = {"round_num": round_num, "responses": responses}
         debate["rounds"].append(round_data)
 
         return responses
@@ -210,8 +202,16 @@ Having seen your peers' reasoning, provide your refined answer:"""
             "consensus_strength": consensus_strength,
             "vote_distribution": answer_counts,
             "answer_groups": answer_groups,  # For debugging/analysis
-            "chosen_responses": [r for r in responses if self.parser.grade_answer(r["answer"], majority_answer, domain=self.domain)],
-            "rejected_responses": [r for r in responses if not self.parser.grade_answer(r["answer"], majority_answer, domain=self.domain)]
+            "chosen_responses": [
+                r
+                for r in responses
+                if self.parser.grade_answer(r["answer"], majority_answer, domain=self.domain)
+            ],
+            "rejected_responses": [
+                r
+                for r in responses
+                if not self.parser.grade_answer(r["answer"], majority_answer, domain=self.domain)
+            ],
         }
 
         debate["consensus"] = consensus
@@ -282,7 +282,7 @@ Having seen your peers' reasoning, provide your refined answer:"""
             "round1_distribution": round1_counts,
             "round2_distribution": round2_counts,
             "round1_groups": round1_groups,  # For debugging/analysis
-            "round2_groups": round2_groups   # For debugging/analysis
+            "round2_groups": round2_groups,  # For debugging/analysis
         }
 
     def export_dpo_pairs(self, debate_id: str) -> List[Dict[str, Any]]:
@@ -312,8 +312,8 @@ Having seen your peers' reasoning, provide your refined answer:"""
                         "debate_id": debate_id,
                         "consensus_strength": consensus["consensus_strength"],
                         "chosen_answer": chosen["answer"],
-                        "rejected_answer": rejected["answer"]
-                    }
+                        "rejected_answer": rejected["answer"],
+                    },
                 }
                 pairs.append(pair)
 
@@ -325,9 +325,9 @@ Having seen your peers' reasoning, provide your refined answer:"""
         consensus = debate["consensus"]
         convergence = self.analyze_convergence(debate_id)
 
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print(f"📊 Debate Summary: {debate_id}")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
         print(f"\nQuestion: {debate['question']}")
         print(f"Category: {debate['metadata'].get('category', 'N/A')}")
         print(f"Difficulty: {debate['metadata'].get('difficulty', 'N/A')}")
@@ -335,7 +335,7 @@ Having seen your peers' reasoning, provide your refined answer:"""
         # Round 1 Results
         round1 = debate["rounds"][0]["responses"]
         round1_votes = Counter([r["answer"] for r in round1])
-        print(f"\n🔄 Round 1 Results:")
+        print("\n🔄 Round 1 Results:")
         for answer, count in round1_votes.items():
             print(f"  - {answer}: {count} vote(s)")
         print(f"  - Consensus: {convergence['round1_consensus']:.1%}")
@@ -344,13 +344,13 @@ Having seen your peers' reasoning, provide your refined answer:"""
         if len(debate["rounds"]) > 1:
             round2 = debate["rounds"][1]["responses"]
             round2_votes = Counter([r["answer"] for r in round2])
-            print(f"\n🔄 Round 2 Results:")
+            print("\n🔄 Round 2 Results:")
             for answer, count in round2_votes.items():
                 print(f"  - {answer}: {count} vote(s)")
             print(f"  - Consensus: {convergence['round2_consensus']:.1%}")
 
         # Consensus Analysis
-        print(f"\n✅ Final Consensus:")
+        print("\n✅ Final Consensus:")
         print(f"  - Majority Answer: {consensus['majority_answer']}")
         print(f"  - Votes: {consensus['majority_count']}/{consensus['total_agents']}")
         print(f"  - Strength: {consensus['consensus_strength']:.1%}")
@@ -362,35 +362,41 @@ Having seen your peers' reasoning, provide your refined answer:"""
             print(f"\n⚠️ Convergence: NO ({convergence['improvement']:+.1%})")
 
         # Quality Assessment
-        quality = "HIGH" if consensus['consensus_strength'] > 0.7 else "MODERATE" if consensus['consensus_strength'] > 0.5 else "LOW"
+        quality = (
+            "HIGH"
+            if consensus["consensus_strength"] > 0.7
+            else "MODERATE"
+            if consensus["consensus_strength"] > 0.5
+            else "LOW"
+        )
         print(f"\n📈 Quality Assessment: {quality}")
 
         # DPO Pairs
         dpo_pairs = self.export_dpo_pairs(debate_id)
         print(f"  - DPO pairs generated: {len(dpo_pairs)}")
 
-        if consensus['consensus_strength'] == 1.0:
+        if consensus["consensus_strength"] == 1.0:
             print("  - ⚠️ Unanimous consensus - no training signal")
             print("  - Recommendation: Use for validation set, not training")
-        elif consensus['consensus_strength'] > 0.7:
+        elif consensus["consensus_strength"] > 0.7:
             print("  - ✅ Strong consensus with disagreement - excellent for training")
         else:
             print("  - ⚠️ Weak consensus - question may be ambiguous")
 
-        print(f"\n{'='*80}\n")
+        print(f"\n{'=' * 80}\n")
 
 
 def main():
     """Run test debates"""
     print("🚀 MACA Debate Test Harness")
-    print("="*80)
+    print("=" * 80)
 
     # Initialize orchestrator
     orchestrator = DebateOrchestrator()
 
     # Register 3 agents
     print("\n1️⃣ Registering Agents")
-    print("-"*80)
+    print("-" * 80)
     orchestrator.register_agent("agent_1", "Agent Alpha")
     orchestrator.register_agent("agent_2", "Agent Beta")
     orchestrator.register_agent("agent_3", "Agent Gamma")
@@ -403,8 +409,8 @@ def main():
             "metadata": {
                 "category": "rate_lock_strategy",
                 "difficulty": "expert",
-                "original_id": "seed_007"
-            }
+                "original_id": "seed_007",
+            },
         },
         {
             "id": "test_debate_002",
@@ -412,8 +418,8 @@ def main():
             "metadata": {
                 "category": "debt_management",
                 "difficulty": "advanced",
-                "original_id": "cma_014"
-            }
+                "original_id": "cma_014",
+            },
         },
         {
             "id": "test_debate_003",
@@ -421,42 +427,37 @@ def main():
             "metadata": {
                 "category": "loan_comparison",
                 "difficulty": "advanced",
-                "original_id": "cma_024"
-            }
-        }
+                "original_id": "cma_024",
+            },
+        },
     ]
 
     # Run all debates
     all_dpo_pairs = []
 
     for i, question_data in enumerate(test_questions, 1):
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print(f"2️⃣ Running Test Debate {i}/3")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         # Start debate
         debate = orchestrator.start_debate(
             debate_id=question_data["id"],
             question=question_data["prompt"],
-            metadata=question_data["metadata"]
+            metadata=question_data["metadata"],
         )
 
         # Round 1 - Independent responses
-        round1_responses = orchestrator.run_round(
-            debate_id=question_data["id"],
-            round_num=1
-        )
+        round1_responses = orchestrator.run_round(debate_id=question_data["id"], round_num=1)
 
         # Round 2 - With peer feedback
-        round2_responses = orchestrator.run_round(
-            debate_id=question_data["id"],
-            round_num=2,
-            previous_responses=round1_responses
+        _round2_responses = orchestrator.run_round(
+            debate_id=question_data["id"], round_num=2, previous_responses=round1_responses
         )
 
         # Calculate consensus
         print("\n📊 Calculating consensus...")
-        consensus = orchestrator.calculate_consensus(question_data["id"])
+        _consensus = orchestrator.calculate_consensus(question_data["id"])
 
         # Print summary
         orchestrator.print_debate_summary(question_data["id"])
@@ -466,9 +467,9 @@ def main():
         all_dpo_pairs.extend(pairs)
 
     # Final validation report
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("3️⃣ VALIDATION REPORT")
-    print("="*80)
+    print("=" * 80)
 
     print(f"\n✅ Agent Registration: {len(orchestrator.agents)}/3 successful")
     print(f"✅ Debates Completed: {len(orchestrator.debates)}/3")
@@ -484,7 +485,9 @@ def main():
             print(f"  ❌ {debate_id}: No consensus calculated")
             validation_passed = False
         else:
-            print(f"  ✅ {debate_id}: Consensus strength {debate['consensus']['consensus_strength']:.1%}")
+            print(
+                f"  ✅ {debate_id}: Consensus strength {debate['consensus']['consensus_strength']:.1%}"
+            )
 
     # Check convergence
     convergence_count = 0
@@ -493,7 +496,9 @@ def main():
         if conv["convergence"]:
             convergence_count += 1
 
-    print(f"\n📈 Convergence Rate: {convergence_count}/{len(orchestrator.debates)} ({convergence_count/len(orchestrator.debates):.1%})")
+    print(
+        f"\n📈 Convergence Rate: {convergence_count}/{len(orchestrator.debates)} ({convergence_count / len(orchestrator.debates):.1%})"
+    )
 
     # Quality distribution
     quality_dist = {"HIGH": 0, "MODERATE": 0, "LOW": 0}
@@ -506,7 +511,7 @@ def main():
         else:
             quality_dist["LOW"] += 1
 
-    print(f"\n📊 Quality Distribution:")
+    print("\n📊 Quality Distribution:")
     print(f"  - HIGH (>0.7): {quality_dist['HIGH']}")
     print(f"  - MODERATE (0.5-0.7): {quality_dist['MODERATE']}")
     print(f"  - LOW (<0.5): {quality_dist['LOW']}")
@@ -521,7 +526,9 @@ def main():
     if convergence_count == len(orchestrator.debates):
         print("  ✅ Perfect convergence - peer feedback is effective")
     elif convergence_count > 0:
-        print(f"  ⚠️ Partial convergence ({convergence_count}/{len(orchestrator.debates)}) - some questions may need refinement")
+        print(
+            f"  ⚠️ Partial convergence ({convergence_count}/{len(orchestrator.debates)}) - some questions may need refinement"
+        )
     else:
         print("  ❌ No convergence - review question selection or increase agent diversity")
 
@@ -543,17 +550,17 @@ def main():
             "total_debates": len(orchestrator.debates),
             "total_dpo_pairs": len(all_dpo_pairs),
             "convergence_rate": convergence_count / len(orchestrator.debates),
-            "quality_distribution": quality_dist
-        }
+            "quality_distribution": quality_dist,
+        },
     }
 
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         json.dump(results, f, indent=2)
 
     print(f"\n💾 Results saved to: {output_file}")
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("✅ Test Debates Complete!")
-    print("="*80)
+    print("=" * 80)
 
 
 if __name__ == "__main__":

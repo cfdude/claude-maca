@@ -10,18 +10,14 @@ This script extracts:
 - Algorithm blocks
 """
 
-import os
+import json
 import sys
 from pathlib import Path
-import json
+
 
 def check_dependencies():
     """Check if required libraries are installed"""
-    required = {
-        'PyMuPDF': 'fitz',
-        'pdf2image': 'pdf2image',
-        'Pillow': 'PIL'
-    }
+    required = {"PyMuPDF": "fitz", "pdf2image": "pdf2image", "Pillow": "PIL"}
 
     missing = []
     for name, module in required.items():
@@ -36,6 +32,7 @@ def check_dependencies():
         print(f"pip install {' '.join(missing)}")
         return False
     return True
+
 
 def extract_images(pdf_path, output_dir):
     """Extract all images from the PDF"""
@@ -67,13 +64,15 @@ def extract_images(pdf_path, output_dir):
                 with open(image_path, "wb") as img_file:
                     img_file.write(image_bytes)
 
-                images_metadata.append({
-                    "filename": image_filename,
-                    "page": page_num + 1,
-                    "index": img_index + 1,
-                    "format": image_ext,
-                    "description": f"Image from page {page_num + 1}"
-                })
+                images_metadata.append(
+                    {
+                        "filename": image_filename,
+                        "page": page_num + 1,
+                        "index": img_index + 1,
+                        "format": image_ext,
+                        "description": f"Image from page {page_num + 1}",
+                    }
+                )
 
                 print(f"  Extracted: {image_filename}")
 
@@ -91,6 +90,7 @@ def extract_images(pdf_path, output_dir):
     doc.close()
     return images_metadata
 
+
 def extract_text_by_section(pdf_path, output_dir):
     """Extract text content organized by sections"""
     import fitz
@@ -100,8 +100,8 @@ def extract_text_by_section(pdf_path, output_dir):
 
     doc = fitz.open(pdf_path)
     full_text = []
-    sections = {}
-    current_section = "Introduction"
+    _sections = {}
+    _current_section = "Introduction"
 
     print(f"\nExtracting text from {len(doc)} pages...")
 
@@ -119,6 +119,7 @@ def extract_text_by_section(pdf_path, output_dir):
 
     doc.close()
     return full_text_path
+
 
 def extract_figures_as_pages(pdf_path, output_dir):
     """Convert PDF pages with figures to images for reference"""
@@ -148,6 +149,7 @@ def extract_figures_as_pages(pdf_path, output_dir):
         print(f"Error converting pages: {e}")
         print("Note: pdf2image requires poppler-utils to be installed")
         print("  macOS: brew install poppler")
+
 
 def create_markdown_template(output_dir):
     """Create markdown template files for organization"""
@@ -200,7 +202,7 @@ TODO: Document improvements
 
 ## Analysis
 TODO: Add analysis
-"""
+""",
     }
 
     docs_dir = output_dir / "docs"
@@ -211,6 +213,7 @@ TODO: Add analysis
         with open(filepath, "w") as f:
             f.write(content)
         print(f"Created template: {filepath}")
+
 
 def main():
     """Main extraction pipeline"""
@@ -230,9 +233,9 @@ def main():
         print(f"Error: PDF not found at {pdf_path}")
         sys.exit(1)
 
-    print("="*60)
+    print("=" * 60)
     print("MACA Research PDF Extraction")
-    print("="*60)
+    print("=" * 60)
 
     # Extract images
     print("\n[1/4] Extracting embedded images...")
@@ -259,14 +262,15 @@ def main():
     print("\n[4/4] Creating markdown templates...")
     create_markdown_template(project_dir)
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Extraction complete!")
-    print("="*60)
-    print(f"\nNext steps:")
+    print("=" * 60)
+    print("\nNext steps:")
     print(f"1. Review extracted images in: {images_dir}")
     print(f"2. Review extracted text in: {extracted_dir}")
     print(f"3. Fill in markdown templates in: {project_dir}/docs")
-    print(f"4. Add image descriptions to images_metadata.json")
+    print("4. Add image descriptions to images_metadata.json")
+
 
 if __name__ == "__main__":
     main()

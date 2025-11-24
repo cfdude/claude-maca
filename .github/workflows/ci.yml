@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  python-checks:
+    name: Python Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Check syntax (compile all Python files)
+        run: |
+          python -m py_compile scripts/*.py tests/*.py
+          echo "All Python files have valid syntax"
+
+      - name: Check formatting with Ruff
+        run: |
+          ruff format --check scripts/ tests/
+
+      - name: Lint with Ruff
+        run: |
+          ruff check scripts/ tests/
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short
+
+  typescript-checks:
+    name: TypeScript Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mcp-server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: mcp-server
+        run: npm ci
+
+      - name: Check TypeScript syntax
+        working-directory: mcp-server
+        run: npx tsc --noEmit
+
+      - name: Lint with ESLint
+        working-directory: mcp-server
+        run: npx eslint src/ --ext .ts || echo "ESLint not configured, skipping"
+
+      - name: Build
+        working-directory: mcp-server
+        run: npm run build

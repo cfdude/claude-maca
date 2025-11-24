@@ -7,14 +7,14 @@ Analyzes question quality, duplicates, and alignment with V2 criteria.
 import csv
 import json
 from collections import Counter, defaultdict
-from typing import Dict, List, Tuple, Any
 from pathlib import Path
+from typing import Any, Dict, List
 
 
 def load_csv_questions(csv_path: str) -> List[Dict[str, str]]:
     """Load questions from CSV file."""
     questions = []
-    with open(csv_path, 'r', encoding='utf-8') as f:
+    with open(csv_path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             questions.append(row)
@@ -23,7 +23,7 @@ def load_csv_questions(csv_path: str) -> List[Dict[str, str]]:
 
 def analyze_duplicates(questions: List[Dict[str, str]]) -> Dict[str, Any]:
     """Find and analyze duplicate questions."""
-    question_texts = [q['Question_Text'] for q in questions]
+    question_texts = [q["Question_Text"] for q in questions]
     text_counts = Counter(question_texts)
 
     duplicates = {text: count for text, count in text_counts.items() if count > 1}
@@ -31,57 +31,59 @@ def analyze_duplicates(questions: List[Dict[str, str]]) -> Dict[str, Any]:
     # Group question IDs by duplicate text
     duplicate_groups = defaultdict(list)
     for q in questions:
-        text = q['Question_Text']
+        text = q["Question_Text"]
         if text in duplicates:
-            duplicate_groups[text].append(q['Question_ID'])
+            duplicate_groups[text].append(q["Question_ID"])
 
     return {
-        'total_questions': len(questions),
-        'unique_questions': len(text_counts),
-        'duplicate_count': len(duplicates),
-        'duplicate_groups': dict(duplicate_groups),
-        'duplicates_list': duplicates
+        "total_questions": len(questions),
+        "unique_questions": len(text_counts),
+        "duplicate_count": len(duplicates),
+        "duplicate_groups": dict(duplicate_groups),
+        "duplicates_list": duplicates,
     }
 
 
 def analyze_pattern_distribution(questions: List[Dict[str, str]]) -> Dict[str, int]:
     """Analyze distribution of pattern types."""
-    pattern_types = [q['Pattern_Type'] for q in questions]
+    pattern_types = [q["Pattern_Type"] for q in questions]
     return dict(Counter(pattern_types))
 
 
 def analyze_uncertainty_sources(questions: List[Dict[str, str]]) -> Dict[str, Any]:
     """Analyze primary and secondary uncertainty sources."""
-    primary_sources = [q['Primary_Uncertainty_Source'] for q in questions]
-    secondary_sources = [q['Secondary_Uncertainty_Source'] for q in questions]
+    primary_sources = [q["Primary_Uncertainty_Source"] for q in questions]
+    secondary_sources = [q["Secondary_Uncertainty_Source"] for q in questions]
 
     return {
-        'primary_distribution': dict(Counter(primary_sources)),
-        'secondary_distribution': dict(Counter(secondary_sources)),
-        'combinations': dict(Counter(
-            f"{q['Primary_Uncertainty_Source']} + {q['Secondary_Uncertainty_Source']}"
-            for q in questions
-        ))
+        "primary_distribution": dict(Counter(primary_sources)),
+        "secondary_distribution": dict(Counter(secondary_sources)),
+        "combinations": dict(
+            Counter(
+                f"{q['Primary_Uncertainty_Source']} + {q['Secondary_Uncertainty_Source']}"
+                for q in questions
+            )
+        ),
     }
 
 
 def analyze_quality_scores(questions: List[Dict[str, str]]) -> Dict[str, Any]:
     """Analyze quality score distribution."""
-    scores = [int(q['Quality_Score_out_of_8']) for q in questions]
+    scores = [int(q["Quality_Score_out_of_8"]) for q in questions]
 
     return {
-        'distribution': dict(Counter(scores)),
-        'mean': sum(scores) / len(scores),
-        'min': min(scores),
-        'max': max(scores),
-        'high_quality_count': sum(1 for s in scores if s >= 6),
-        'low_quality_count': sum(1 for s in scores if s < 4)
+        "distribution": dict(Counter(scores)),
+        "mean": sum(scores) / len(scores),
+        "min": min(scores),
+        "max": max(scores),
+        "high_quality_count": sum(1 for s in scores if s >= 6),
+        "low_quality_count": sum(1 for s in scores if s < 4),
     }
 
 
 def analyze_difficulty(questions: List[Dict[str, str]]) -> Dict[str, int]:
     """Analyze expected difficulty distribution."""
-    difficulties = [q['Expected_Difficulty'] for q in questions]
+    difficulties = [q["Expected_Difficulty"] for q in questions]
     return dict(Counter(difficulties))
 
 
@@ -89,52 +91,57 @@ def validate_v2_criteria(questions: List[Dict[str, str]]) -> Dict[str, Any]:
     """Check alignment with V2 criteria requirements."""
 
     # Check minimum uncertainty requirement (2+ sources)
-    min_uncertainty_met = sum(1 for q in questions if '✓ Yes' in q.get('Min_Uncertainty_Check', ''))
+    min_uncertainty_met = sum(1 for q in questions if "✓ Yes" in q.get("Min_Uncertainty_Check", ""))
 
     # Check debate-worthiness
-    high_debate_worthy = sum(1 for q in questions if 'High' in q.get('Debate_Worthiness', ''))
+    high_debate_worthy = sum(1 for q in questions if "High" in q.get("Debate_Worthiness", ""))
 
     # Check for deterministic patterns (red flags from V2)
     red_flags = {
-        'exact_numbers': 0,
-        'specific_timeframes': 0,
-        'clear_market_direction': 0,
-        'complete_information': 0
+        "exact_numbers": 0,
+        "specific_timeframes": 0,
+        "clear_market_direction": 0,
+        "complete_information": 0,
     }
 
     for q in questions:
-        text = q['Question_Text'].lower()
+        text = q["Question_Text"].lower()
 
         # Check for exact dollar amounts (e.g., "$8,000", "$200")
-        if '$' in text and any(char.isdigit() for char in text):
+        if "$" in text and any(char.isdigit() for char in text):
             # More nuanced: only flag if very specific (e.g., "exactly $8,000")
-            if 'exactly' in text or 'pay $' in text:
-                red_flags['exact_numbers'] += 1
+            if "exactly" in text or "pay $" in text:
+                red_flags["exact_numbers"] += 1
 
         # Check for specific timeframes (e.g., "exactly 7 years", "in 3 months")
-        if 'exactly' in text and 'year' in text:
-            red_flags['specific_timeframes'] += 1
+        if "exactly" in text and "year" in text:
+            red_flags["specific_timeframes"] += 1
 
         # Check for clear market direction statements
-        if any(phrase in text for phrase in ['will drop', 'will rise', 'expected to', 'rates are dropping']):
-            red_flags['clear_market_direction'] += 1
+        if any(
+            phrase in text
+            for phrase in ["will drop", "will rise", "expected to", "rates are dropping"]
+        ):
+            red_flags["clear_market_direction"] += 1
 
         # Check for overly complete information (harder to detect, focus on "all" or "complete")
-        if any(phrase in text for phrase in ['all information', 'complete data', 'fully known']):
-            red_flags['complete_information'] += 1
+        if any(phrase in text for phrase in ["all information", "complete data", "fully known"]):
+            red_flags["complete_information"] += 1
 
     return {
-        'min_uncertainty_met': min_uncertainty_met,
-        'min_uncertainty_percentage': (min_uncertainty_met / len(questions)) * 100,
-        'high_debate_worthy': high_debate_worthy,
-        'debate_worthy_percentage': (high_debate_worthy / len(questions)) * 100,
-        'red_flags': red_flags,
-        'red_flag_total': sum(red_flags.values()),
-        'red_flag_percentage': (sum(red_flags.values()) / len(questions)) * 100
+        "min_uncertainty_met": min_uncertainty_met,
+        "min_uncertainty_percentage": (min_uncertainty_met / len(questions)) * 100,
+        "high_debate_worthy": high_debate_worthy,
+        "debate_worthy_percentage": (high_debate_worthy / len(questions)) * 100,
+        "red_flags": red_flags,
+        "red_flag_total": sum(red_flags.values()),
+        "red_flag_percentage": (sum(red_flags.values()) / len(questions)) * 100,
     }
 
 
-def find_strongest_candidates(questions: List[Dict[str, str]], top_n: int = 50) -> List[Dict[str, str]]:
+def find_strongest_candidates(
+    questions: List[Dict[str, str]], top_n: int = 50
+) -> List[Dict[str, str]]:
     """Identify strongest questions for validation batch."""
 
     # Score each question
@@ -143,24 +150,24 @@ def find_strongest_candidates(questions: List[Dict[str, str]], top_n: int = 50) 
         score = 0
 
         # Quality score (0-8) - weight heavily
-        score += int(q['Quality_Score_out_of_8']) * 3
+        score += int(q["Quality_Score_out_of_8"]) * 3
 
         # High debate-worthiness
-        if 'High' in q.get('Debate_Worthiness', ''):
+        if "High" in q.get("Debate_Worthiness", ""):
             score += 5
 
         # Minimum uncertainty met
-        if '✓ Yes' in q.get('Min_Uncertainty_Check', ''):
+        if "✓ Yes" in q.get("Min_Uncertainty_Check", ""):
             score += 3
 
         # Medium difficulty (not too easy, not impossibly hard)
-        if q['Expected_Difficulty'] == 'Medium':
+        if q["Expected_Difficulty"] == "Medium":
             score += 2
-        elif q['Expected_Difficulty'] == 'Medium-Hard':
+        elif q["Expected_Difficulty"] == "Medium-Hard":
             score += 1
 
         # Diverse pattern types (bonus for less common patterns)
-        if q['Pattern_Type'] not in ['Uncertain Timeline']:
+        if q["Pattern_Type"] not in ["Uncertain Timeline"]:
             score += 1
 
         scored_questions.append((q, score))
@@ -198,12 +205,16 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
 
     # Duplicate Analysis
     report.append("## DUPLICATE ANALYSIS")
-    if dup_analysis['duplicate_count'] > 0:
+    if dup_analysis["duplicate_count"] > 0:
         report.append(f"⚠️  Found {dup_analysis['duplicate_count']} duplicate question texts")
-        report.append(f"   This reduces effective dataset from {dup_analysis['total_questions']} → {dup_analysis['unique_questions']} questions")
+        report.append(
+            f"   This reduces effective dataset from {dup_analysis['total_questions']} → {dup_analysis['unique_questions']} questions"
+        )
         report.append("")
         report.append("Top 10 duplicates:")
-        sorted_dups = sorted(dup_analysis['duplicates_list'].items(), key=lambda x: x[1], reverse=True)
+        sorted_dups = sorted(
+            dup_analysis["duplicates_list"].items(), key=lambda x: x[1], reverse=True
+        )
         for text, count in sorted_dups[:10]:
             # Truncate long text
             display_text = text[:100] + "..." if len(text) > 100 else text
@@ -216,7 +227,7 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
     report.append("## PATTERN TYPE DISTRIBUTION")
     sorted_patterns = sorted(pattern_dist.items(), key=lambda x: x[1], reverse=True)
     for pattern, count in sorted_patterns:
-        percentage = (count / dup_analysis['total_questions']) * 100
+        percentage = (count / dup_analysis["total_questions"]) * 100
         report.append(f"   {pattern}: {count} ({percentage:.1f}%)")
     report.append("")
 
@@ -224,15 +235,19 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
     report.append("## UNCERTAINTY SOURCE ANALYSIS")
     report.append("")
     report.append("Primary Uncertainty Sources:")
-    sorted_primary = sorted(uncertainty_analysis['primary_distribution'].items(), key=lambda x: x[1], reverse=True)
+    sorted_primary = sorted(
+        uncertainty_analysis["primary_distribution"].items(), key=lambda x: x[1], reverse=True
+    )
     for source, count in sorted_primary:
-        percentage = (count / dup_analysis['total_questions']) * 100
+        percentage = (count / dup_analysis["total_questions"]) * 100
         report.append(f"   {source}: {count} ({percentage:.1f}%)")
     report.append("")
     report.append("Secondary Uncertainty Sources:")
-    sorted_secondary = sorted(uncertainty_analysis['secondary_distribution'].items(), key=lambda x: x[1], reverse=True)
+    sorted_secondary = sorted(
+        uncertainty_analysis["secondary_distribution"].items(), key=lambda x: x[1], reverse=True
+    )
     for source, count in sorted_secondary:
-        percentage = (count / dup_analysis['total_questions']) * 100
+        percentage = (count / dup_analysis["total_questions"]) * 100
         report.append(f"   {source}: {count} ({percentage:.1f}%)")
     report.append("")
 
@@ -240,13 +255,17 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
     report.append("## QUALITY SCORE ANALYSIS")
     report.append(f"Mean quality score: {quality_analysis['mean']:.2f} / 8")
     report.append(f"Range: {quality_analysis['min']} - {quality_analysis['max']}")
-    report.append(f"High quality (≥6): {quality_analysis['high_quality_count']} ({(quality_analysis['high_quality_count']/dup_analysis['total_questions'])*100:.1f}%)")
-    report.append(f"Low quality (<4): {quality_analysis['low_quality_count']} ({(quality_analysis['low_quality_count']/dup_analysis['total_questions'])*100:.1f}%)")
+    report.append(
+        f"High quality (≥6): {quality_analysis['high_quality_count']} ({(quality_analysis['high_quality_count'] / dup_analysis['total_questions']) * 100:.1f}%)"
+    )
+    report.append(
+        f"Low quality (<4): {quality_analysis['low_quality_count']} ({(quality_analysis['low_quality_count'] / dup_analysis['total_questions']) * 100:.1f}%)"
+    )
     report.append("")
     report.append("Distribution:")
-    for score in sorted(quality_analysis['distribution'].keys()):
-        count = quality_analysis['distribution'][score]
-        percentage = (count / dup_analysis['total_questions']) * 100
+    for score in sorted(quality_analysis["distribution"].keys()):
+        count = quality_analysis["distribution"][score]
+        percentage = (count / dup_analysis["total_questions"]) * 100
         bar = "█" * int(percentage / 2)
         report.append(f"   {score}/8: {count:3d} ({percentage:5.1f}%) {bar}")
     report.append("")
@@ -255,21 +274,33 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
     report.append("## EXPECTED DIFFICULTY DISTRIBUTION")
     sorted_diff = sorted(difficulty_dist.items(), key=lambda x: x[1], reverse=True)
     for difficulty, count in sorted_diff:
-        percentage = (count / dup_analysis['total_questions']) * 100
+        percentage = (count / dup_analysis["total_questions"]) * 100
         report.append(f"   {difficulty}: {count} ({percentage:.1f}%)")
     report.append("")
 
     # V2 Criteria Validation
     report.append("## V2 CRITERIA COMPLIANCE")
-    report.append(f"✅ Minimum uncertainty met (2+ sources): {v2_validation['min_uncertainty_met']} ({v2_validation['min_uncertainty_percentage']:.1f}%)")
-    report.append(f"✅ High debate-worthiness: {v2_validation['high_debate_worthy']} ({v2_validation['debate_worthy_percentage']:.1f}%)")
+    report.append(
+        f"✅ Minimum uncertainty met (2+ sources): {v2_validation['min_uncertainty_met']} ({v2_validation['min_uncertainty_percentage']:.1f}%)"
+    )
+    report.append(
+        f"✅ High debate-worthiness: {v2_validation['high_debate_worthy']} ({v2_validation['debate_worthy_percentage']:.1f}%)"
+    )
     report.append("")
     report.append("🚨 Red Flags (Deterministic Patterns):")
     report.append(f"   Exact numbers with 'exactly': {v2_validation['red_flags']['exact_numbers']}")
-    report.append(f"   Specific timeframes ('exactly X years'): {v2_validation['red_flags']['specific_timeframes']}")
-    report.append(f"   Clear market direction stated: {v2_validation['red_flags']['clear_market_direction']}")
-    report.append(f"   Complete information claims: {v2_validation['red_flags']['complete_information']}")
-    report.append(f"   Total red flags: {v2_validation['red_flag_total']} ({v2_validation['red_flag_percentage']:.1f}%)")
+    report.append(
+        f"   Specific timeframes ('exactly X years'): {v2_validation['red_flags']['specific_timeframes']}"
+    )
+    report.append(
+        f"   Clear market direction stated: {v2_validation['red_flags']['clear_market_direction']}"
+    )
+    report.append(
+        f"   Complete information claims: {v2_validation['red_flags']['complete_information']}"
+    )
+    report.append(
+        f"   Total red flags: {v2_validation['red_flag_total']} ({v2_validation['red_flag_percentage']:.1f}%)"
+    )
     report.append("")
 
     # Overall Assessment
@@ -281,13 +312,15 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
     issues = []
 
     # Deduct for duplicates
-    dup_penalty = (dup_analysis['duplicate_count'] / dup_analysis['total_questions']) * 100
+    dup_penalty = (dup_analysis["duplicate_count"] / dup_analysis["total_questions"]) * 100
     if dup_penalty > 50:
         grade_score -= 30
         issues.append(f"❌ CRITICAL: {dup_penalty:.1f}% duplicates - major dataset quality issue")
     elif dup_penalty > 20:
         grade_score -= 15
-        issues.append(f"⚠️  WARNING: {dup_penalty:.1f}% duplicates - significant reduction in effective size")
+        issues.append(
+            f"⚠️  WARNING: {dup_penalty:.1f}% duplicates - significant reduction in effective size"
+        )
     elif dup_penalty > 5:
         grade_score -= 5
         issues.append(f"⚠️  Minor: {dup_penalty:.1f}% duplicates")
@@ -296,10 +329,10 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
         issues.append(f"✅ Minimal duplicates ({dup_penalty:.1f}%)")
 
     # Check quality scores
-    if quality_analysis['mean'] >= 6.5:
+    if quality_analysis["mean"] >= 6.5:
         grade_score += 20
         issues.append(f"✅ Excellent quality scores (mean: {quality_analysis['mean']:.2f}/8)")
-    elif quality_analysis['mean'] >= 5.5:
+    elif quality_analysis["mean"] >= 5.5:
         grade_score += 10
         issues.append(f"✅ Good quality scores (mean: {quality_analysis['mean']:.2f}/8)")
     else:
@@ -307,26 +340,38 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
         issues.append(f"⚠️  Quality scores below target (mean: {quality_analysis['mean']:.2f}/8)")
 
     # Check V2 criteria compliance
-    if v2_validation['min_uncertainty_percentage'] >= 95:
+    if v2_validation["min_uncertainty_percentage"] >= 95:
         grade_score += 15
-        issues.append(f"✅ Strong V2 compliance ({v2_validation['min_uncertainty_percentage']:.1f}% meet 2+ uncertainty sources)")
-    elif v2_validation['min_uncertainty_percentage'] >= 80:
+        issues.append(
+            f"✅ Strong V2 compliance ({v2_validation['min_uncertainty_percentage']:.1f}% meet 2+ uncertainty sources)"
+        )
+    elif v2_validation["min_uncertainty_percentage"] >= 80:
         grade_score += 10
-        issues.append(f"✅ Good V2 compliance ({v2_validation['min_uncertainty_percentage']:.1f}% meet 2+ uncertainty sources)")
+        issues.append(
+            f"✅ Good V2 compliance ({v2_validation['min_uncertainty_percentage']:.1f}% meet 2+ uncertainty sources)"
+        )
     else:
         grade_score -= 5
-        issues.append(f"⚠️  V2 compliance needs work ({v2_validation['min_uncertainty_percentage']:.1f}% meet 2+ uncertainty sources)")
+        issues.append(
+            f"⚠️  V2 compliance needs work ({v2_validation['min_uncertainty_percentage']:.1f}% meet 2+ uncertainty sources)"
+        )
 
     # Check red flags
-    if v2_validation['red_flag_percentage'] < 5:
+    if v2_validation["red_flag_percentage"] < 5:
         grade_score += 15
-        issues.append(f"✅ Very few deterministic patterns ({v2_validation['red_flag_percentage']:.1f}%)")
-    elif v2_validation['red_flag_percentage'] < 15:
+        issues.append(
+            f"✅ Very few deterministic patterns ({v2_validation['red_flag_percentage']:.1f}%)"
+        )
+    elif v2_validation["red_flag_percentage"] < 15:
         grade_score += 5
-        issues.append(f"✅ Low deterministic patterns ({v2_validation['red_flag_percentage']:.1f}%)")
+        issues.append(
+            f"✅ Low deterministic patterns ({v2_validation['red_flag_percentage']:.1f}%)"
+        )
     else:
         grade_score -= 10
-        issues.append(f"⚠️  Too many deterministic patterns ({v2_validation['red_flag_percentage']:.1f}%)")
+        issues.append(
+            f"⚠️  Too many deterministic patterns ({v2_validation['red_flag_percentage']:.1f}%)"
+        )
 
     # Check pattern diversity
     pattern_diversity = len(pattern_dist)
@@ -370,28 +415,42 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
     report.append("")
 
     # Predict based on quality scores and V2 compliance
-    expected_optimal = int(dup_analysis['unique_questions'] * (v2_validation['min_uncertainty_percentage'] / 100) * 0.7)
-    expected_unanimous = int(dup_analysis['unique_questions'] * (v2_validation['red_flag_percentage'] / 100) * 1.5)
-    expected_kept = expected_optimal + int((dup_analysis['unique_questions'] - expected_optimal - expected_unanimous) * 0.3)
+    expected_optimal = int(
+        dup_analysis["unique_questions"] * (v2_validation["min_uncertainty_percentage"] / 100) * 0.7
+    )
+    expected_unanimous = int(
+        dup_analysis["unique_questions"] * (v2_validation["red_flag_percentage"] / 100) * 1.5
+    )
+    expected_kept = expected_optimal + int(
+        (dup_analysis["unique_questions"] - expected_optimal - expected_unanimous) * 0.3
+    )
 
-    report.append(f"Based on CSV metadata and V2 criteria:")
+    report.append("Based on CSV metadata and V2 criteria:")
     report.append(f"   Expected optimal consensus (60-80%): {expected_optimal} questions")
     report.append(f"   Expected unanimous (100%): {expected_unanimous} questions")
-    report.append(f"   Expected kept for training: {expected_kept} / {dup_analysis['unique_questions']} ({(expected_kept/dup_analysis['unique_questions'])*100:.1f}%)")
+    report.append(
+        f"   Expected kept for training: {expected_kept} / {dup_analysis['unique_questions']} ({(expected_kept / dup_analysis['unique_questions']) * 100:.1f}%)"
+    )
     report.append(f"   Expected DPO pairs: ~{expected_kept * 2}")
     report.append("")
 
     # Comparison to previous batch
     report.append("📊 Comparison to Previous Validation Batch:")
     report.append("   Previous: 78% unanimous, 22% kept for training")
-    if v2_validation['red_flag_percentage'] < 10:
-        report.append(f"   Expected: ~{expected_unanimous/dup_analysis['unique_questions']*100:.1f}% unanimous, ~{expected_kept/dup_analysis['unique_questions']*100:.1f}% kept")
+    if v2_validation["red_flag_percentage"] < 10:
+        report.append(
+            f"   Expected: ~{expected_unanimous / dup_analysis['unique_questions'] * 100:.1f}% unanimous, ~{expected_kept / dup_analysis['unique_questions'] * 100:.1f}% kept"
+        )
         report.append("   ✅ SIGNIFICANT IMPROVEMENT expected")
-    elif v2_validation['red_flag_percentage'] < 20:
-        report.append(f"   Expected: ~{expected_unanimous/dup_analysis['unique_questions']*100:.1f}% unanimous, ~{expected_kept/dup_analysis['unique_questions']*100:.1f}% kept")
+    elif v2_validation["red_flag_percentage"] < 20:
+        report.append(
+            f"   Expected: ~{expected_unanimous / dup_analysis['unique_questions'] * 100:.1f}% unanimous, ~{expected_kept / dup_analysis['unique_questions'] * 100:.1f}% kept"
+        )
         report.append("   ✅ MODERATE IMPROVEMENT expected")
     else:
-        report.append(f"   Expected: Similar to previous (~{expected_unanimous/dup_analysis['unique_questions']*100:.1f}% unanimous)")
+        report.append(
+            f"   Expected: Similar to previous (~{expected_unanimous / dup_analysis['unique_questions'] * 100:.1f}% unanimous)"
+        )
         report.append("   ⚠️  May still have too many deterministic questions")
     report.append("")
 
@@ -401,10 +460,12 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
     report.append("=" * 80)
     report.append("")
 
-    if dup_analysis['duplicate_count'] > 0:
+    if dup_analysis["duplicate_count"] > 0:
         report.append("1. **DEDUPLICATE DATASET**")
         report.append(f"   Remove {dup_analysis['duplicate_count']} duplicate questions")
-        report.append(f"   This will reduce dataset from {dup_analysis['total_questions']} → {dup_analysis['unique_questions']} questions")
+        report.append(
+            f"   This will reduce dataset from {dup_analysis['total_questions']} → {dup_analysis['unique_questions']} questions"
+        )
         report.append("")
 
     if final_grade >= 70:
@@ -415,7 +476,9 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
         report.append("")
         report.append("3. **IF VALIDATION PASSES (>50% kept for training)**")
         report.append(f"   Proceed with full {dup_analysis['unique_questions']}-question batch")
-        report.append(f"   Expected duration: ~{(dup_analysis['unique_questions'] * 0.75):.0f} minutes ({(dup_analysis['unique_questions'] * 0.75/60):.1f} hours)")
+        report.append(
+            f"   Expected duration: ~{(dup_analysis['unique_questions'] * 0.75):.0f} minutes ({(dup_analysis['unique_questions'] * 0.75 / 60):.1f} hours)"
+        )
         report.append(f"   Expected DPO pairs: {expected_kept * 2}+")
     else:
         report.append("2. **REFINE QUESTIONS BEFORE VALIDATION**")
@@ -438,7 +501,9 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
 
 def main():
     """Main evaluation function."""
-    csv_path = Path(__file__).parent.parent / "proprietary" / "data" / "loan_origination_questions.csv"
+    csv_path = (
+        Path(__file__).parent.parent / "proprietary" / "data" / "loan_origination_questions.csv"
+    )
 
     if not csv_path.exists():
         print(f"❌ Error: CSV file not found at {csv_path}")
@@ -455,7 +520,7 @@ def main():
 
     # Save report
     report_path = csv_path.parent / "csv_evaluation_report.txt"
-    with open(report_path, 'w', encoding='utf-8') as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write(report)
 
     print(f"\n✅ Report saved to: {report_path}")
@@ -465,21 +530,23 @@ def main():
 
     # Convert to JSON format for batch processing
     validation_questions = []
-    for i, q in enumerate(top_50, 1):
-        validation_questions.append({
-            "id": q['Question_ID'],
-            "prompt": q['Question_Text'],
-            "metadata": {
-                "pattern_type": q['Pattern_Type'],
-                "primary_uncertainty": q['Primary_Uncertainty_Source'],
-                "secondary_uncertainty": q['Secondary_Uncertainty_Source'],
-                "quality_score": q['Quality_Score_out_of_8'],
-                "expected_difficulty": q['Expected_Difficulty']
+    for _i, q in enumerate(top_50, 1):
+        validation_questions.append(
+            {
+                "id": q["Question_ID"],
+                "prompt": q["Question_Text"],
+                "metadata": {
+                    "pattern_type": q["Pattern_Type"],
+                    "primary_uncertainty": q["Primary_Uncertainty_Source"],
+                    "secondary_uncertainty": q["Secondary_Uncertainty_Source"],
+                    "quality_score": q["Quality_Score_out_of_8"],
+                    "expected_difficulty": q["Expected_Difficulty"],
+                },
             }
-        })
+        )
 
     validation_path = csv_path.parent / "loan_origination_questions_validation_v2.json"
-    with open(validation_path, 'w', encoding='utf-8') as f:
+    with open(validation_path, "w", encoding="utf-8") as f:
         json.dump(validation_questions, f, indent=2)
 
     print(f"✅ Top 50 validation candidates saved to: {validation_path}")
