@@ -15,8 +15,9 @@ from peft import PeftModel
 from datasets import load_dataset
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class EvaluationConfig:
     BASE_DIR = Path(__file__).parent.parent  # Auto-detect project root
@@ -36,14 +37,12 @@ class EvaluationConfig:
     # Number of examples to generate
     NUM_EXAMPLES = 5
 
+
 def load_base_model(config):
     """Load the base (untuned) model."""
     logger.info(f"Loading base model: {config.BASE_MODEL_NAME}")
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        config.BASE_MODEL_NAME,
-        trust_remote_code=True
-    )
+    tokenizer = AutoTokenizer.from_pretrained(config.BASE_MODEL_NAME, trust_remote_code=True)
 
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -52,11 +51,12 @@ def load_base_model(config):
         config.BASE_MODEL_NAME,
         torch_dtype=torch.bfloat16 if torch.backends.mps.is_available() else torch.float16,
         device_map="auto",
-        trust_remote_code=True
+        trust_remote_code=True,
     )
 
     logger.info("Base model loaded successfully")
     return model, tokenizer
+
 
 def load_finetuned_model(config):
     """Load the fine-tuned LoRA model."""
@@ -67,7 +67,7 @@ def load_finetuned_model(config):
         config.BASE_MODEL_NAME,
         torch_dtype=torch.bfloat16 if torch.backends.mps.is_available() else torch.float16,
         device_map="auto",
-        trust_remote_code=True
+        trust_remote_code=True,
     )
 
     # Load LoRA adapters
@@ -79,6 +79,7 @@ def load_finetuned_model(config):
 
     logger.info("Fine-tuned model loaded successfully")
     return model, tokenizer
+
 
 def generate_response(model, tokenizer, prompt, config):
     """Generate a response from the model."""
@@ -98,8 +99,11 @@ def generate_response(model, tokenizer, prompt, config):
         )
 
     # Decode only the new tokens (excluding the prompt)
-    response = tokenizer.decode(outputs[0][inputs['input_ids'].shape[1]:], skip_special_tokens=True)
+    response = tokenizer.decode(
+        outputs[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True
+    )
     return response.strip()
+
 
 def evaluate(config):
     """Main evaluation function."""
@@ -123,9 +127,9 @@ def evaluate(config):
 
     for i in range(num_examples):
         example = val_data[i]
-        prompt = example['prompt']
+        prompt = example["prompt"]
 
-        logger.info(f"\nExample {i+1}/{num_examples}")
+        logger.info(f"\nExample {i + 1}/{num_examples}")
         logger.info(f"Prompt: {prompt[:100]}...")
 
         # Generate from base model
@@ -138,15 +142,15 @@ def evaluate(config):
 
         # Store results
         result = {
-            'prompt': prompt,
-            'base_response': base_response,
-            'finetuned_response': finetuned_response,
-            'chosen_response': example['chosen'],
-            'rejected_response': example['rejected'],
-            'base_length': len(base_response),
-            'finetuned_length': len(finetuned_response),
-            'chosen_length': len(example['chosen']),
-            'rejected_length': len(example['rejected']),
+            "prompt": prompt,
+            "base_response": base_response,
+            "finetuned_response": finetuned_response,
+            "chosen_response": example["chosen"],
+            "rejected_response": example["rejected"],
+            "base_length": len(base_response),
+            "finetuned_length": len(finetuned_response),
+            "chosen_length": len(example["chosen"]),
+            "rejected_length": len(example["rejected"]),
         }
         results.append(result)
 
@@ -158,34 +162,44 @@ def evaluate(config):
         logger.info(base_response[:300] + "..." if len(base_response) > 300 else base_response)
         logger.info("-" * 80)
         logger.info(f"FINE-TUNED MODEL ({len(finetuned_response)} chars):")
-        logger.info(finetuned_response[:300] + "..." if len(finetuned_response) > 300 else finetuned_response)
+        logger.info(
+            finetuned_response[:300] + "..."
+            if len(finetuned_response) > 300
+            else finetuned_response
+        )
         logger.info("-" * 80)
         logger.info(f"CHOSEN RESPONSE ({len(example['chosen'])} chars):")
-        logger.info(example['chosen'][:300] + "..." if len(example['chosen']) > 300 else example['chosen'])
+        logger.info(
+            example["chosen"][:300] + "..." if len(example["chosen"]) > 300 else example["chosen"]
+        )
         logger.info("=" * 80)
 
     # Save results
     results_file = config.RESULTS_DIR / "comparison_results.json"
-    with open(results_file, 'w') as f:
+    with open(results_file, "w") as f:
         json.dump(results, f, indent=2)
     logger.info(f"\nResults saved to {results_file}")
 
     # Compute metrics
-    avg_base_length = sum(r['base_length'] for r in results) / len(results)
-    avg_finetuned_length = sum(r['finetuned_length'] for r in results) / len(results)
-    avg_chosen_length = sum(r['chosen_length'] for r in results) / len(results)
+    avg_base_length = sum(r["base_length"] for r in results) / len(results)
+    avg_finetuned_length = sum(r["finetuned_length"] for r in results) / len(results)
+    avg_chosen_length = sum(r["chosen_length"] for r in results) / len(results)
 
     metrics = {
-        'num_examples': num_examples,
-        'avg_base_length': avg_base_length,
-        'avg_finetuned_length': avg_finetuned_length,
-        'avg_chosen_length': avg_chosen_length,
-        'finetuned_vs_base_length_ratio': avg_finetuned_length / avg_base_length if avg_base_length > 0 else 0,
-        'finetuned_vs_chosen_length_ratio': avg_finetuned_length / avg_chosen_length if avg_chosen_length > 0 else 0,
+        "num_examples": num_examples,
+        "avg_base_length": avg_base_length,
+        "avg_finetuned_length": avg_finetuned_length,
+        "avg_chosen_length": avg_chosen_length,
+        "finetuned_vs_base_length_ratio": avg_finetuned_length / avg_base_length
+        if avg_base_length > 0
+        else 0,
+        "finetuned_vs_chosen_length_ratio": avg_finetuned_length / avg_chosen_length
+        if avg_chosen_length > 0
+        else 0,
     }
 
     metrics_file = config.RESULTS_DIR / "evaluation_metrics.json"
-    with open(metrics_file, 'w') as f:
+    with open(metrics_file, "w") as f:
         json.dump(metrics, f, indent=2)
     logger.info(f"Metrics saved to {metrics_file}")
 
@@ -203,6 +217,7 @@ def evaluate(config):
 
     logger.info("\nEvaluation complete!")
     logger.info(f"Review detailed comparisons in: {results_file}")
+
 
 if __name__ == "__main__":
     config = EvaluationConfig()

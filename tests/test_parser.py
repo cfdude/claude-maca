@@ -56,7 +56,7 @@ class TestGenericNormalization(unittest.TestCase):
             "My answer is yes",
             "I think yes",
             "I believe yes",
-            "In my opinion yes"
+            "In my opinion yes",
         ]
         for text in prefixes:
             result = self.parser.normalize(text, domain="generic")
@@ -100,12 +100,7 @@ class TestFinancialNormalization(unittest.TestCase):
 
     def test_currency_symbol_removal(self):
         """Test currency symbols are removed"""
-        test_cases = [
-            ("$1000", "1000"),
-            ("€500", "500"),
-            ("£750", "750"),
-            ("¥1000", "1000")
-        ]
+        test_cases = [("$1000", "1000"), ("€500", "500"), ("£750", "750"), ("¥1000", "1000")]
         for input_val, expected in test_cases:
             result = self.parser.normalize(input_val, domain="financial")
             self.assertIn(expected, result)
@@ -122,11 +117,7 @@ class TestFinancialNormalization(unittest.TestCase):
 
     def test_financial_notation(self):
         """Test M/K/B financial notation"""
-        test_cases = [
-            ("1.5M", "1500000"),
-            ("2.3K", "2300"),
-            ("1.2B", "1200000000")
-        ]
+        test_cases = [("1.5M", "1500000"), ("2.3K", "2300"), ("1.2B", "1200000000")]
         for input_val, expected_contains in test_cases:
             result = self.parser.normalize(input_val, domain="financial")
             self.assertIn(expected_contains, result)
@@ -156,11 +147,7 @@ class TestLegalNormalization(unittest.TestCase):
 
     def test_usc_normalization(self):
         """Test U.S.C. variations normalize to 'usc'"""
-        test_cases = [
-            "42 U.S.C. § 1983",
-            "42 USC 1983",
-            "42 u.s.c. 1983"
-        ]
+        test_cases = ["42 U.S.C. § 1983", "42 USC 1983", "42 u.s.c. 1983"]
         for text in test_cases:
             result = self.parser.normalize(text, domain="legal")
             self.assertIn("usc", result)
@@ -194,10 +181,7 @@ class TestMedicalNormalization(unittest.TestCase):
 
     def test_icd_code_normalization(self):
         """Test ICD code normalization"""
-        test_cases = [
-            ("ICD-10 code J44.0", "icd10"),
-            ("ICD-9 code 123.4", "icd9")
-        ]
+        test_cases = [("ICD-10 code J44.0", "icd10"), ("ICD-9 code 123.4", "icd9")]
         for input_val, expected_contains in test_cases:
             result = self.parser.normalize(input_val, domain="medical")
             self.assertIn(expected_contains, result)
@@ -209,11 +193,7 @@ class TestMedicalNormalization(unittest.TestCase):
 
     def test_dosage_unit_normalization(self):
         """Test medication dosage unit normalization"""
-        test_cases = [
-            ("500mg", "milligram"),
-            ("10ml", "milliliter"),
-            ("100mcg", "microgram")
-        ]
+        test_cases = [("500mg", "milligram"), ("10ml", "milliliter"), ("100mcg", "microgram")]
         for input_val, expected_contains in test_cases:
             result = self.parser.normalize(input_val, domain="medical")
             self.assertIn(expected_contains, result)
@@ -224,7 +204,7 @@ class TestMedicalNormalization(unittest.TestCase):
             ("Take prn", "as needed"),
             ("Take qd", "daily"),
             ("Take bid", "twice daily"),
-            ("Take tid", "three times daily")
+            ("Take tid", "three times daily"),
         ]
         for input_val, expected_contains in test_cases:
             result = self.parser.normalize(input_val, domain="medical")
@@ -233,8 +213,7 @@ class TestMedicalNormalization(unittest.TestCase):
     def test_complex_medical_answer(self):
         """Test complex medical answer normalization"""
         result = self.parser.normalize(
-            "Diagnose ICD-10 J44.0, prescribe 500mg bid",
-            domain="medical"
+            "Diagnose ICD-10 J44.0, prescribe 500mg bid", domain="medical"
         )
         self.assertIn("icd10", result)
         self.assertIn("j440", result)
@@ -263,62 +242,38 @@ class TestGradeAnswer(unittest.TestCase):
 
     def test_prefix_variations_match(self):
         """Test prefix variations match"""
-        self.assertTrue(
-            self.parser.grade_answer("Answer: yes", "Response: yes")
-        )
+        self.assertTrue(self.parser.grade_answer("Answer: yes", "Response: yes"))
 
     def test_financial_equivalence(self):
         """Test financial answer equivalence"""
         # $1,000.00 normalized to "1000.00", $1000 normalized to "1000"
         # 72.7% similarity, so need lenient threshold
         parser_lenient = AnswerParser(similarity_threshold=0.70)
-        self.assertTrue(
-            parser_lenient.grade_answer("$1,000.00", "$1000", domain="financial")
-        )
+        self.assertTrue(parser_lenient.grade_answer("$1,000.00", "$1000", domain="financial"))
         # $1.5M expands to 1500000.0, $1,500,000 normalizes to 1500000
         # Very similar, should match
-        self.assertTrue(
-            parser_lenient.grade_answer("$1.5M", "$1,500,000", domain="financial")
-        )
+        self.assertTrue(parser_lenient.grade_answer("$1.5M", "$1,500,000", domain="financial"))
 
     def test_legal_equivalence(self):
         """Test legal citation equivalence"""
-        self.assertTrue(
-            self.parser.grade_answer(
-                "42 U.S.C. § 1983",
-                "42 USC 1983",
-                domain="legal"
-            )
-        )
+        self.assertTrue(self.parser.grade_answer("42 U.S.C. § 1983", "42 USC 1983", domain="legal"))
 
     def test_medical_equivalence(self):
         """Test medical code equivalence"""
-        self.assertTrue(
-            self.parser.grade_answer(
-                "ICD-10 J44.0",
-                "ICD10 J440",
-                domain="medical"
-            )
-        )
+        self.assertTrue(self.parser.grade_answer("ICD-10 J44.0", "ICD10 J440", domain="medical"))
 
     def test_fuzzy_matching(self):
         """Test fuzzy matching with high similarity"""
         # "wait for rates" vs "wait for better rates" have 80% similarity
         parser_80 = AnswerParser(similarity_threshold=0.80)
-        self.assertTrue(
-            parser_80.grade_answer("wait for rates", "wait for better rates")
-        )
+        self.assertTrue(parser_80.grade_answer("wait for rates", "wait for better rates"))
 
         # Test exact threshold boundary
-        self.assertTrue(
-            self.parser.grade_answer("should refinance now", "should refinance today")
-        )
+        self.assertTrue(self.parser.grade_answer("should refinance now", "should refinance today"))
 
     def test_completely_different(self):
         """Test completely different answers return False"""
-        self.assertFalse(
-            self.parser.grade_answer("refinance", "wait")
-        )
+        self.assertFalse(self.parser.grade_answer("refinance", "wait"))
 
     def test_low_similarity(self):
         """Test low similarity returns False"""
@@ -396,16 +351,12 @@ class TestCustomThreshold(unittest.TestCase):
         """Test strict threshold (0.95) rejects minor differences"""
         parser = AnswerParser(similarity_threshold=0.95)
         # These are similar but not 95% similar
-        self.assertFalse(
-            parser.grade_answer("refinance now", "refinance today")
-        )
+        self.assertFalse(parser.grade_answer("refinance now", "refinance today"))
 
     def test_lenient_threshold(self):
         """Test lenient threshold (0.7) accepts minor differences"""
         parser = AnswerParser(similarity_threshold=0.7)
-        self.assertTrue(
-            parser.grade_answer("refinance now", "refinance today")
-        )
+        self.assertTrue(parser.grade_answer("refinance now", "refinance today"))
 
 
 class TestConvenienceFunctions(unittest.TestCase):
@@ -424,9 +375,7 @@ class TestConvenienceFunctions(unittest.TestCase):
     def test_custom_threshold_in_convenience(self):
         """Test custom threshold in convenience function"""
         result = check_answer_equivalence(
-            "refinance now",
-            "refinance today",
-            similarity_threshold=0.7
+            "refinance now", "refinance today", similarity_threshold=0.7
         )
         self.assertTrue(result)
 
@@ -478,40 +427,24 @@ class TestRealWorldScenarios(unittest.TestCase):
         parser_real_world = AnswerParser(similarity_threshold=0.80)
 
         # Test specific pairs that should match (similar structure + content)
-        self.assertTrue(
-            parser_real_world.grade_answer("should refinance", "should refinance now")
-        )
-        self.assertTrue(
-            parser_real_world.grade_answer("wait for rates", "wait for better rates")
-        )
+        self.assertTrue(parser_real_world.grade_answer("should refinance", "should refinance now"))
+        self.assertTrue(parser_real_world.grade_answer("wait for rates", "wait for better rates"))
 
         # Test that different answers don't match
-        self.assertFalse(
-            parser_real_world.grade_answer("should refinance", "should wait")
-        )
-        self.assertFalse(
-            parser_real_world.grade_answer("refinance", "wait")
-        )
+        self.assertFalse(parser_real_world.grade_answer("should refinance", "should wait"))
+        self.assertFalse(parser_real_world.grade_answer("refinance", "wait"))
 
     def test_rate_lock_answers(self):
         """Test rate lock vs float answers"""
         parser_real_world = AnswerParser(similarity_threshold=0.80)
 
         # Test specific pairs that should match
-        self.assertTrue(
-            parser_real_world.grade_answer("should lock", "should lock rate")
-        )
-        self.assertTrue(
-            parser_real_world.grade_answer("should float", "should float rate")
-        )
+        self.assertTrue(parser_real_world.grade_answer("should lock", "should lock rate"))
+        self.assertTrue(parser_real_world.grade_answer("should float", "should float rate"))
 
         # Test that lock and float don't match
-        self.assertFalse(
-            parser_real_world.grade_answer("should lock", "should float")
-        )
-        self.assertFalse(
-            parser_real_world.grade_answer("lock", "float")
-        )
+        self.assertFalse(parser_real_world.grade_answer("should lock", "should float"))
+        self.assertFalse(parser_real_world.grade_answer("lock", "float"))
 
 
 if __name__ == "__main__":

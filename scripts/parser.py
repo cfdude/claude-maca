@@ -147,12 +147,19 @@ class AnswerParser:
 
         # Remove common prefixes
         prefixes = [
-            "answer:", "response:", "result:", "output:", "solution:",
-            "my answer is", "i think", "i believe", "in my opinion"
+            "answer:",
+            "response:",
+            "result:",
+            "output:",
+            "solution:",
+            "my answer is",
+            "i think",
+            "i believe",
+            "in my opinion",
         ]
         for prefix in prefixes:
             if normalized.startswith(prefix):
-                normalized = normalized[len(prefix):].strip()
+                normalized = normalized[len(prefix) :].strip()
 
         # Normalize yes/no variations
         yes_variations = ["yes", "yeah", "yep", "yup", "affirmative", "correct", "true"]
@@ -164,10 +171,10 @@ class AnswerParser:
             normalized = "no"
 
         # Collapse multiple spaces
-        normalized = re.sub(r'\s+', ' ', normalized)
+        normalized = re.sub(r"\s+", " ", normalized)
 
         # Strip edge punctuation (but preserve internal punctuation)
-        normalized = normalized.strip('.,;:!?"\'-')
+        normalized = normalized.strip(".,;:!?\"'-")
 
         return normalized
 
@@ -198,16 +205,16 @@ class AnswerParser:
         normalized = answer
 
         # Remove currency symbols
-        currency_symbols = ['$', '€', '£', '¥', '¢']
+        currency_symbols = ["$", "€", "£", "¥", "¢"]
         for symbol in currency_symbols:
-            normalized = normalized.replace(symbol, '')
+            normalized = normalized.replace(symbol, "")
 
         # Remove thousand separators
-        normalized = normalized.replace(',', '')
+        normalized = normalized.replace(",", "")
 
         # Normalize percentage
-        if '%' in normalized:
-            normalized = normalized.replace('%', ' percent')
+        if "%" in normalized:
+            normalized = normalized.replace("%", " percent")
 
         # Handle financial notation (1.5M, 2.3K, etc.)
         # Must preserve the captured number and multiply by the appropriate factor
@@ -220,9 +227,15 @@ class AnswerParser:
         def multiply_by_billion(match):
             return str(float(match.group(1)) * 1000000000)
 
-        normalized = re.sub(r'(\d+\.?\d*)\s*m\b', multiply_by_million, normalized, flags=re.IGNORECASE)
-        normalized = re.sub(r'(\d+\.?\d*)\s*k\b', multiply_by_thousand, normalized, flags=re.IGNORECASE)
-        normalized = re.sub(r'(\d+\.?\d*)\s*b\b', multiply_by_billion, normalized, flags=re.IGNORECASE)
+        normalized = re.sub(
+            r"(\d+\.?\d*)\s*m\b", multiply_by_million, normalized, flags=re.IGNORECASE
+        )
+        normalized = re.sub(
+            r"(\d+\.?\d*)\s*k\b", multiply_by_thousand, normalized, flags=re.IGNORECASE
+        )
+        normalized = re.sub(
+            r"(\d+\.?\d*)\s*b\b", multiply_by_billion, normalized, flags=re.IGNORECASE
+        )
 
         return normalized.strip()
 
@@ -250,19 +263,19 @@ class AnswerParser:
         normalized = answer
 
         # Remove section symbols
-        normalized = normalized.replace('§', '').replace('section', '')
+        normalized = normalized.replace("§", "").replace("section", "")
 
         # Normalize U.S.C. variations
-        normalized = re.sub(r'u\.?s\.?c\.?', 'usc', normalized)
-        normalized = re.sub(r'c\.?f\.?r\.?', 'cfr', normalized)
-        normalized = re.sub(r'u\.?s\.?\b', 'us', normalized)
+        normalized = re.sub(r"u\.?s\.?c\.?", "usc", normalized)
+        normalized = re.sub(r"c\.?f\.?r\.?", "cfr", normalized)
+        normalized = re.sub(r"u\.?s\.?\b", "us", normalized)
 
         # Remove v. or vs. in case citations
-        normalized = re.sub(r'\s+v\.?\s+', ' v ', normalized)
-        normalized = re.sub(r'\s+vs\.?\s+', ' v ', normalized)
+        normalized = re.sub(r"\s+v\.?\s+", " v ", normalized)
+        normalized = re.sub(r"\s+vs\.?\s+", " v ", normalized)
 
         # Collapse multiple spaces again after substitutions
-        normalized = re.sub(r'\s+', ' ', normalized)
+        normalized = re.sub(r"\s+", " ", normalized)
 
         return normalized.strip()
 
@@ -290,26 +303,26 @@ class AnswerParser:
         normalized = answer
 
         # Normalize ICD codes
-        normalized = re.sub(r'icd-?10', 'icd10', normalized)
-        normalized = re.sub(r'icd-?9', 'icd9', normalized)
+        normalized = re.sub(r"icd-?10", "icd10", normalized)
+        normalized = re.sub(r"icd-?9", "icd9", normalized)
 
         # Remove dashes from codes (J44.0 → j440, but keep spaces)
         # This regex only affects code-like patterns (letter followed by digits and dots)
-        normalized = re.sub(r'([a-z])(\d+)\.(\d+)', r'\1\2\3', normalized)
+        normalized = re.sub(r"([a-z])(\d+)\.(\d+)", r"\1\2\3", normalized)
 
         # Normalize dosage units
-        normalized = normalized.replace('mg', 'milligram')
-        normalized = normalized.replace('ml', 'milliliter')
-        normalized = normalized.replace('mcg', 'microgram')
+        normalized = normalized.replace("mg", "milligram")
+        normalized = normalized.replace("ml", "milliliter")
+        normalized = normalized.replace("mcg", "microgram")
 
         # Common medical abbreviations
-        normalized = normalized.replace('prn', 'as needed')
-        normalized = normalized.replace('qd', 'daily')
-        normalized = normalized.replace('bid', 'twice daily')
-        normalized = normalized.replace('tid', 'three times daily')
+        normalized = normalized.replace("prn", "as needed")
+        normalized = normalized.replace("qd", "daily")
+        normalized = normalized.replace("bid", "twice daily")
+        normalized = normalized.replace("tid", "three times daily")
 
         # Collapse multiple spaces again after substitutions
-        normalized = re.sub(r'\s+', ' ', normalized)
+        normalized = re.sub(r"\s+", " ", normalized)
 
         return normalized.strip()
 
@@ -341,8 +354,12 @@ class AnswerParser:
 
 # Convenience functions for common use cases
 
-def normalize_answer(answer: str, domain: str = "generic",
-                     similarity_threshold: float = AnswerParser.DEFAULT_SIMILARITY_THRESHOLD) -> str:
+
+def normalize_answer(
+    answer: str,
+    domain: str = "generic",
+    similarity_threshold: float = AnswerParser.DEFAULT_SIMILARITY_THRESHOLD,
+) -> str:
     """
     Convenience function to normalize a single answer.
 
@@ -358,8 +375,12 @@ def normalize_answer(answer: str, domain: str = "generic",
     return parser.normalize(answer, domain=domain)
 
 
-def check_answer_equivalence(given: str, ground_truth: str, domain: str = "generic",
-                             similarity_threshold: float = AnswerParser.DEFAULT_SIMILARITY_THRESHOLD) -> bool:
+def check_answer_equivalence(
+    given: str,
+    ground_truth: str,
+    domain: str = "generic",
+    similarity_threshold: float = AnswerParser.DEFAULT_SIMILARITY_THRESHOLD,
+) -> bool:
     """
     Convenience function to check if two answers are equivalent.
 

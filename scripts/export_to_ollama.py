@@ -14,8 +14,9 @@ from peft import PeftModel
 import logging
 import subprocess
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class ExportConfig:
     BASE_DIR = Path(__file__).parent.parent  # Auto-detect project root
@@ -24,6 +25,7 @@ class ExportConfig:
 
     BASE_MODEL_NAME = "Qwen/Qwen2.5-3B"
     OLLAMA_MODEL_NAME = "maca-model:v1"
+
 
 def merge_lora_weights(config):
     """Merge LoRA adapters with base model."""
@@ -37,7 +39,7 @@ def merge_lora_weights(config):
         config.BASE_MODEL_NAME,
         torch_dtype=torch.bfloat16,
         device_map="auto",
-        trust_remote_code=True
+        trust_remote_code=True,
     )
 
     # Load LoRA adapters
@@ -59,6 +61,7 @@ def merge_lora_weights(config):
 
     logger.info("Model merged successfully!")
     return config.MERGED_MODEL_DIR
+
 
 def create_modelfile(config):
     """Create Ollama Modelfile."""
@@ -89,11 +92,12 @@ Always prioritize detailed, thoughtful advice over quick, generic responses.
 \"\"\"
 """
 
-    with open(modelfile_path, 'w') as f:
+    with open(modelfile_path, "w") as f:
         f.write(modelfile_content)
 
     logger.info(f"Modelfile created at: {modelfile_path}")
     return modelfile_path
+
 
 def create_ollama_model(modelfile_path, config):
     """Create Ollama model from Modelfile."""
@@ -106,13 +110,7 @@ def create_ollama_model(modelfile_path, config):
     logger.info(f"Running: {cmd}")
 
     try:
-        result = subprocess.run(
-            cmd,
-            shell=True,
-            check=True,
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True)
         logger.info(result.stdout)
         logger.info(f"Ollama model '{config.OLLAMA_MODEL_NAME}' created successfully!")
     except subprocess.CalledProcessError as e:
@@ -120,6 +118,7 @@ def create_ollama_model(modelfile_path, config):
         logger.error(f"stdout: {e.stdout}")
         logger.error(f"stderr: {e.stderr}")
         raise
+
 
 def test_ollama_model(config):
     """Test the created Ollama model."""
@@ -135,12 +134,7 @@ def test_ollama_model(config):
 
     try:
         result = subprocess.run(
-            cmd,
-            shell=True,
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=60
+            cmd, shell=True, check=True, capture_output=True, text=True, timeout=60
         )
         logger.info("\nModel response:")
         logger.info("-" * 80)
@@ -151,6 +145,7 @@ def test_ollama_model(config):
         logger.error(f"stderr: {e.stderr}")
     except subprocess.TimeoutExpired:
         logger.error("Model test timed out after 60 seconds")
+
 
 def export(config):
     """Main export function."""
@@ -175,6 +170,7 @@ def export(config):
     logger.info(f"Ollama model name: {config.OLLAMA_MODEL_NAME}")
     logger.info(f"Usage: ollama run {config.OLLAMA_MODEL_NAME}")
     logger.info("=" * 80)
+
 
 if __name__ == "__main__":
     config = ExportConfig()

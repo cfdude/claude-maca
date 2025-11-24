@@ -5,18 +5,18 @@ import json
 from pathlib import Path
 
 # Load existing dataset
-with open('data/training_dataset_with_visuals.json', 'r') as f:
+with open("data/training_dataset_with_visuals.json", "r") as f:
     main_dataset = json.load(f)
 
 # Load statistical examples
-with open('data/statistical_context_examples.json', 'r') as f:
+with open("data/statistical_context_examples.json", "r") as f:
     statistical_examples = json.load(f)
 
 # Merge datasets
 merged_dataset = main_dataset + statistical_examples
 
 # Save merged dataset
-with open('data/training_dataset_complete.json', 'w') as f:
+with open("data/training_dataset_complete.json", "w") as f:
     json.dump(merged_dataset, f, indent=2)
 
 print(f"Merged dataset created:")
@@ -28,7 +28,7 @@ print(f"  Saved to: data/training_dataset_complete.json")
 # Create summary by category
 categories = {}
 for example in merged_dataset:
-    cat = example['metadata']['category']
+    cat = example["metadata"]["category"]
     categories[cat] = categories.get(cat, 0) + 1
 
 print(f"\nBreakdown by category:")

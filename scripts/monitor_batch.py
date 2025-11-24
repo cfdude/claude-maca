@@ -9,6 +9,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 RESULTS_FILE = BASE_DIR / "proprietary/data/debate_results.json"
 
+
 def load_results():
     """Load current results if they exist."""
     if not RESULTS_FILE.exists():
@@ -19,12 +20,14 @@ def load_results():
     except:
         return None
 
+
 def format_time(seconds):
     """Format seconds into readable time."""
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
     secs = int(seconds % 60)
     return f"{hours}h {minutes}m {secs}s"
+
 
 def print_progress():
     """Print current progress."""
@@ -36,9 +39,9 @@ def print_progress():
     metrics = data.get("metrics", {})
     results = data.get("results", [])
 
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print(f"BATCH DEBATE PROGRESS")
-    print(f"{'='*80}\n")
+    print(f"{'=' * 80}\n")
 
     total = metrics.get("total_debates", 49)
     completed = metrics.get("completed_debates", 0)
@@ -53,9 +56,11 @@ def print_progress():
         print(f"  Ambiguous: {metrics.get('filtered_out_ambiguous', 0)}")
 
         print(f"\nConsensus:")
-        avg_consensus = metrics.get('total_consensus_sum', 0) / completed
+        avg_consensus = metrics.get("total_consensus_sum", 0) / completed
         print(f"  Average: {avg_consensus:.2f}")
-        print(f"  Converged: {metrics.get('convergence_count', 0)} ({metrics.get('convergence_count', 0)/completed:.1%})")
+        print(
+            f"  Converged: {metrics.get('convergence_count', 0)} ({metrics.get('convergence_count', 0) / completed:.1%})"
+        )
         print(f"  Diverged: {metrics.get('divergence_count', 0)}")
 
         print(f"\nDPO Training Pairs:")
@@ -70,7 +75,8 @@ def print_progress():
         print(f"  Convergence: {last['convergence']}")
         print(f"  Filter: {last['filter_decision']}")
 
-    print(f"\n{'='*80}\n")
+    print(f"\n{'=' * 80}\n")
+
 
 if __name__ == "__main__":
     print_progress()

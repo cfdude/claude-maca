@@ -14,12 +14,7 @@ import torch
 import sys
 from datetime import datetime
 from pathlib import Path
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    TrainingArguments,
-    set_seed
-)
+from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, set_seed
 from trl import DPOTrainer, DPOConfig
 from peft import LoraConfig, get_peft_model, PeftModel
 from datasets import load_dataset
@@ -28,13 +23,11 @@ import logging
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('training.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("training.log"), logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger(__name__)
+
 
 # Configuration
 class TrainingConfig:
@@ -56,8 +49,13 @@ class TrainingConfig:
     LORA_ALPHA = 32
     LORA_DROPOUT = 0.1
     LORA_TARGET_MODULES = [
-        "q_proj", "k_proj", "v_proj", "o_proj",
-        "gate_proj", "up_proj", "down_proj"
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
     ]
 
     # DPO Hyperparameters (Very conservative to prevent overfitting)
@@ -84,6 +82,7 @@ class TrainingConfig:
     SAVE_TOTAL_LIMIT = 2
     LOGGING_STEPS = 5
 
+
 def print_trainable_parameters(model):
     """Print the number of trainable parameters in the model."""
     trainable_params = 0
@@ -98,15 +97,13 @@ def print_trainable_parameters(model):
         f"Trainable%: {100 * trainable_params / all_param:.2f}%"
     )
 
+
 def load_model_and_tokenizer(config):
     """Load base model and tokenizer."""
     logger.info(f"Loading base model: {config.MODEL_NAME}")
 
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(
-        config.MODEL_NAME,
-        trust_remote_code=True
-    )
+    tokenizer = AutoTokenizer.from_pretrained(config.MODEL_NAME, trust_remote_code=True)
 
     # Set padding token
     if tokenizer.pad_token is None:
@@ -118,7 +115,7 @@ def load_model_and_tokenizer(config):
         config.MODEL_NAME,
         torch_dtype=torch.bfloat16 if torch.backends.mps.is_available() else torch.float16,
         device_map="auto",
-        trust_remote_code=True
+        trust_remote_code=True,
     )
 
     logger.info(f"Model loaded successfully")
@@ -126,6 +123,7 @@ def load_model_and_tokenizer(config):
     logger.info(f"Device: {model.device}")
 
     return model, tokenizer
+
 
 def apply_lora(model, config):
     """Apply LoRA adapters to the model."""
@@ -137,7 +135,7 @@ def apply_lora(model, config):
         lora_dropout=config.LORA_DROPOUT,
         target_modules=config.LORA_TARGET_MODULES,
         bias="none",
-        task_type="CAUSAL_LM"
+        task_type="CAUSAL_LM",
     )
 
     model = get_peft_model(model, lora_config)
@@ -146,23 +144,20 @@ def apply_lora(model, config):
 
     return model
 
+
 def load_datasets(config):
     """Load training and validation datasets."""
     logger.info("Loading datasets...")
 
     dataset = load_dataset(
-        "json",
-        data_files={
-            "train": config.TRAIN_FILE,
-            "validation": config.VAL_FILE
-        }
+        "json", data_files={"train": config.TRAIN_FILE, "validation": config.VAL_FILE}
     )
 
     logger.info(f"Train samples: {len(dataset['train'])}")
     logger.info(f"Validation samples: {len(dataset['validation'])}")
 
     # Log sample
-    sample = dataset['train'][0]
+    sample = dataset["train"][0]
     logger.info("Sample training example:")
     logger.info(f"  Prompt: {sample['prompt'][:100]}...")
     logger.info(f"  Chosen length: {len(sample['chosen'])}")
@@ -170,31 +165,27 @@ def load_datasets(config):
 
     return dataset
 
+
 def create_training_config(config):
     """Create DPO training configuration."""
     training_args = DPOConfig(
         output_dir=str(config.OUTPUT_DIR),
-
         # Training schedule
         num_train_epochs=config.NUM_EPOCHS,
         per_device_train_batch_size=config.PER_DEVICE_TRAIN_BATCH_SIZE,
         per_device_eval_batch_size=config.PER_DEVICE_EVAL_BATCH_SIZE,
         gradient_accumulation_steps=config.GRADIENT_ACCUMULATION_STEPS,
-
         # Learning rate
         learning_rate=config.LEARNING_RATE,
         lr_scheduler_type="cosine",
         warmup_ratio=config.WARMUP_RATIO,
-
         # Optimization
         optim="adamw_torch",
         weight_decay=config.WEIGHT_DECAY,
         max_grad_norm=config.MAX_GRAD_NORM,
-
         # DPO-specific
         beta=config.BETA,
         loss_type="sigmoid",
-
         # Evaluation and saving
         eval_strategy="epoch",
         save_strategy="epoch",
@@ -202,30 +193,26 @@ def create_training_config(config):
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
         greater_is_better=False,
-
         # Logging
         logging_steps=config.LOGGING_STEPS,
         logging_first_step=True,
         report_to=["tensorboard"],
-
         # Memory optimization
         gradient_checkpointing=True,
         bf16=torch.backends.mps.is_available(),  # Use bf16 on Apple Silicon
         fp16=not torch.backends.mps.is_available(),  # Use fp16 on other hardware
-
         # Reproducibility
         seed=config.SEED,
         data_seed=config.SEED,
-
         # Misc
         remove_unused_columns=False,
-
         # Max lengths for DPO
         max_length=config.MAX_LENGTH,
         max_prompt_length=config.MAX_PROMPT_LENGTH,
     )
 
     return training_args
+
 
 def train(config):
     """Main training function."""
@@ -246,7 +233,9 @@ def train(config):
     logger.info(f"Output directory: {config.OUTPUT_DIR}")
     logger.info(f"Epochs: {config.NUM_EPOCHS}")
     logger.info(f"Learning rate: {config.LEARNING_RATE}")
-    logger.info(f"Batch size (effective): {config.PER_DEVICE_TRAIN_BATCH_SIZE * config.GRADIENT_ACCUMULATION_STEPS}")
+    logger.info(
+        f"Batch size (effective): {config.PER_DEVICE_TRAIN_BATCH_SIZE * config.GRADIENT_ACCUMULATION_STEPS}"
+    )
     logger.info(f"LoRA r: {config.LORA_R}, alpha: {config.LORA_ALPHA}")
     logger.info(f"DPO beta: {config.BETA}")
     logger.info("=" * 80)
@@ -299,7 +288,7 @@ def train(config):
 
     # Save training metrics
     metrics_file = config.OUTPUT_DIR / "training_metrics.json"
-    with open(metrics_file, 'w') as f:
+    with open(metrics_file, "w") as f:
         json.dump(train_result.metrics, f, indent=2)
     logger.info(f"Metrics saved to {metrics_file}")
 
@@ -316,12 +305,13 @@ def train(config):
         "beta": config.BETA,
         "training_duration_seconds": training_duration.total_seconds(),
     }
-    with open(config_file, 'w') as f:
+    with open(config_file, "w") as f:
         json.dump(config_dict, f, indent=2)
     logger.info(f"Config saved to {config_file}")
 
     logger.info("Training complete!")
     return trainer
+
 
 if __name__ == "__main__":
     config = TrainingConfig()

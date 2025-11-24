@@ -17,22 +17,25 @@ from enum import Enum
 from datetime import datetime
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
+
 class JobStatus(Enum):
     """Job execution status."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     RETRYING = "retrying"
 
+
 @dataclass
 class DebateJob:
     """Represents a single debate job."""
+
     job_id: str
     question: Dict[str, Any]
     agents: int = 5
@@ -57,8 +60,9 @@ class DebateJob:
             "error": self.error,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": self.completed_at.isoformat() if self.completed_at else None
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
         }
+
 
 class DebateScheduler:
     """
@@ -71,12 +75,7 @@ class DebateScheduler:
     - Progress reporting
     """
 
-    def __init__(
-        self,
-        max_concurrent: int = 4,
-        max_retries: int = 3,
-        retry_delay: float = 5.0
-    ):
+    def __init__(self, max_concurrent: int = 4, max_retries: int = 3, retry_delay: float = 5.0):
         """
         Initialize scheduler.
 
@@ -95,14 +94,16 @@ class DebateScheduler:
         self.completed_count: int = 0
         self.failed_count: int = 0
 
-        logger.info(f"Scheduler initialized: max_concurrent={max_concurrent}, max_retries={max_retries}")
+        logger.info(
+            f"Scheduler initialized: max_concurrent={max_concurrent}, max_retries={max_retries}"
+        )
 
     async def add_job(
         self,
         question: Dict[str, Any],
         job_id: Optional[str] = None,
         agents: int = 5,
-        rounds: int = 2
+        rounds: int = 2,
     ) -> str:
         """
         Add a debate job to the queue.
@@ -124,7 +125,7 @@ class DebateScheduler:
             question=question,
             agents=agents,
             rounds=rounds,
-            max_attempts=self.max_retries
+            max_attempts=self.max_retries,
         )
 
         self.jobs[job_id] = job
@@ -134,10 +135,7 @@ class DebateScheduler:
         return job_id
 
     async def add_batch(
-        self,
-        questions: List[Dict[str, Any]],
-        agents: int = 5,
-        rounds: int = 2
+        self, questions: List[Dict[str, Any]], agents: int = 5, rounds: int = 2
     ) -> List[str]:
         """
         Add multiple jobs at once.
@@ -153,21 +151,14 @@ class DebateScheduler:
         job_ids = []
         for i, question in enumerate(questions):
             job_id = await self.add_job(
-                question,
-                job_id=f"batch_{i:04d}",
-                agents=agents,
-                rounds=rounds
+                question, job_id=f"batch_{i:04d}", agents=agents, rounds=rounds
             )
             job_ids.append(job_id)
 
         logger.info(f"Added {len(job_ids)} jobs to queue")
         return job_ids
 
-    async def process_job(
-        self,
-        job: DebateJob,
-        debate_fn: Callable
-    ) -> bool:
+    async def process_job(self, job: DebateJob, debate_fn: Callable) -> bool:
         """
         Process a single debate job.
 
@@ -220,11 +211,7 @@ class DebateScheduler:
                 logger.error(f"Job {job.job_id} failed permanently after {job.attempts} attempts")
                 return False
 
-    async def worker(
-        self,
-        worker_id: int,
-        debate_fn: Callable
-    ):
+    async def worker(self, worker_id: int, debate_fn: Callable):
         """
         Worker coroutine to process jobs from queue.
 
@@ -254,11 +241,7 @@ class DebateScheduler:
 
         logger.info(f"Worker {worker_id} stopped")
 
-    async def run(
-        self,
-        debate_fn: Callable,
-        progress_callback: Optional[Callable] = None
-    ):
+    async def run(self, debate_fn: Callable, progress_callback: Optional[Callable] = None):
         """
         Run the scheduler with worker pool.
 
@@ -270,12 +253,12 @@ class DebateScheduler:
 
         # Create worker pool
         workers = [
-            asyncio.create_task(self.worker(i, debate_fn))
-            for i in range(self.max_concurrent)
+            asyncio.create_task(self.worker(i, debate_fn)) for i in range(self.max_concurrent)
         ]
 
         # Optional progress reporting
         if progress_callback:
+
             async def report_progress():
                 while self.active_jobs > 0 or not self.queue.empty():
                     await progress_callback(self.get_status())
@@ -303,7 +286,9 @@ class DebateScheduler:
             except asyncio.CancelledError:
                 pass
 
-        logger.info(f"Scheduler completed: {self.completed_count} succeeded, {self.failed_count} failed")
+        logger.info(
+            f"Scheduler completed: {self.completed_count} succeeded, {self.failed_count} failed"
+        )
 
     def get_status(self) -> Dict[str, Any]:
         """
@@ -326,7 +311,7 @@ class DebateScheduler:
             "pending": pending,
             "running": running,
             "retrying": retrying,
-            "progress_percent": (self.completed_count / total * 100) if total > 0 else 0
+            "progress_percent": (self.completed_count / total * 100) if total > 0 else 0,
         }
 
     def get_results(self) -> List[Dict[str, Any]]:
@@ -344,7 +329,8 @@ class DebateScheduler:
                 "error": job.error,
                 "attempts": job.attempts,
                 "duration": (job.completed_at - job.started_at).total_seconds()
-                    if job.completed_at and job.started_at else None
+                if job.completed_at and job.started_at
+                else None,
             }
             for job in self.jobs.values()
             if job.status == JobStatus.COMPLETED
@@ -362,7 +348,7 @@ class DebateScheduler:
                 "job_id": job.job_id,
                 "question": job.question,
                 "error": job.error,
-                "attempts": job.attempts
+                "attempts": job.attempts,
             }
             for job in self.jobs.values()
             if job.status == JobStatus.FAILED

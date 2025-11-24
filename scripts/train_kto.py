@@ -18,6 +18,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
 from trl import KTOTrainer, KTOConfig
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
+
 def load_kto_dataset(jsonl_path: str) -> Dataset:
     """
     Load KTO dataset from JSONL file.
@@ -43,6 +44,7 @@ def load_kto_dataset(jsonl_path: str) -> Dataset:
 
     return Dataset.from_list(data)
 
+
 def train_kto(config_path: str):
     """
     Run KTO training pipeline.
@@ -54,14 +56,14 @@ def train_kto(config_path: str):
     with open(config_path) as f:
         config = json.load(f)
 
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print("MACA KTO TRAINING")
-    print(f"{'='*80}\n")
+    print(f"{'=' * 80}\n")
 
     # Extract config
-    base_model = config['base_model']
-    kto_data_path = config['kto_data_path']
-    output_dir = config['output_dir']
+    base_model = config["base_model"]
+    kto_data_path = config["kto_data_path"]
+    output_dir = config["output_dir"]
 
     print(f"Base model: {base_model}")
     print(f"KTO data: {kto_data_path}")
@@ -74,7 +76,7 @@ def train_kto(config_path: str):
         base_model,
         torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
         device_map="auto" if torch.cuda.is_available() else None,
-        trust_remote_code=True
+        trust_remote_code=True,
     )
 
     tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
@@ -89,19 +91,19 @@ def train_kto(config_path: str):
     print()
 
     # Apply LoRA
-    if config.get('use_lora', True):
+    if config.get("use_lora", True):
         print("Applying LoRA configuration...")
         lora_config = LoraConfig(
-            r=config['lora']['r'],
-            lora_alpha=config['lora']['alpha'],
-            lora_dropout=config['lora']['dropout'],
-            target_modules=config['lora']['target_modules'],
+            r=config["lora"]["r"],
+            lora_alpha=config["lora"]["alpha"],
+            lora_dropout=config["lora"]["dropout"],
+            target_modules=config["lora"]["target_modules"],
             bias="none",
-            task_type="CAUSAL_LM"
+            task_type="CAUSAL_LM",
         )
 
         # Prepare model for k-bit training if using quantization
-        if config.get('load_in_8bit', False) or config.get('load_in_4bit', False):
+        if config.get("load_in_8bit", False) or config.get("load_in_4bit", False):
             model = prepare_model_for_kbit_training(model)
 
         model = get_peft_model(model, lora_config)
@@ -109,7 +111,9 @@ def train_kto(config_path: str):
         total_params = sum(p.numel() for p in model.parameters())
 
         print(f"✓ LoRA applied")
-        print(f"  Trainable parameters: {trainable_params:,} ({trainable_params/total_params:.2%})")
+        print(
+            f"  Trainable parameters: {trainable_params:,} ({trainable_params / total_params:.2%})"
+        )
         print(f"  LoRA rank: {config['lora']['r']}")
         print(f"  LoRA alpha: {config['lora']['alpha']}")
         print()
@@ -120,11 +124,10 @@ def train_kto(config_path: str):
 
     # Split train/val
     train_val_split = dataset.train_test_split(
-        test_size=config.get('val_split', 0.2),
-        seed=config.get('seed', 42)
+        test_size=config.get("val_split", 0.2), seed=config.get("seed", 42)
     )
-    train_dataset = train_val_split['train']
-    val_dataset = train_val_split['test']
+    train_dataset = train_val_split["train"]
+    val_dataset = train_val_split["test"]
 
     print(f"✓ Dataset loaded")
     print(f"  Total examples: {len(dataset)}")
@@ -133,21 +136,21 @@ def train_kto(config_path: str):
     print()
 
     # Count desirable vs undesirable
-    desirable_count = sum(1 for ex in dataset if ex['label'])
+    desirable_count = sum(1 for ex in dataset if ex["label"])
     undesirable_count = len(dataset) - desirable_count
-    print(f"  Desirable: {desirable_count} ({desirable_count/len(dataset):.1%})")
-    print(f"  Undesirable: {undesirable_count} ({undesirable_count/len(dataset):.1%})")
+    print(f"  Desirable: {desirable_count} ({desirable_count / len(dataset):.1%})")
+    print(f"  Undesirable: {undesirable_count} ({undesirable_count / len(dataset):.1%})")
     print()
 
     # KTO training config
     training_args = KTOConfig(
         output_dir=output_dir,
-        num_train_epochs=config['training_args']['num_train_epochs'],
-        per_device_train_batch_size=config['training_args'].get('per_device_train_batch_size', 1),
-        per_device_eval_batch_size=config['training_args'].get('per_device_eval_batch_size', 1),
-        gradient_accumulation_steps=config['training_args'].get('gradient_accumulation_steps', 4),
-        learning_rate=config['training_args']['learning_rate'],
-        logging_steps=config['training_args'].get('logging_steps', 5),
+        num_train_epochs=config["training_args"]["num_train_epochs"],
+        per_device_train_batch_size=config["training_args"].get("per_device_train_batch_size", 1),
+        per_device_eval_batch_size=config["training_args"].get("per_device_eval_batch_size", 1),
+        gradient_accumulation_steps=config["training_args"].get("gradient_accumulation_steps", 4),
+        learning_rate=config["training_args"]["learning_rate"],
+        logging_steps=config["training_args"].get("logging_steps", 5),
         eval_strategy="epoch",
         save_strategy="epoch",
         save_total_limit=2,
@@ -155,11 +158,10 @@ def train_kto(config_path: str):
         report_to=["tensorboard"],
         remove_unused_columns=False,
         bf16=torch.cuda.is_available(),
-
         # KTO-specific parameters
-        beta=config['kto_args'].get('beta', 0.1),
-        desirable_weight=config['kto_args'].get('desirable_weight', 1.0),
-        undesirable_weight=config['kto_args'].get('undesirable_weight', 1.0),
+        beta=config["kto_args"].get("beta", 0.1),
+        desirable_weight=config["kto_args"].get("desirable_weight", 1.0),
+        undesirable_weight=config["kto_args"].get("undesirable_weight", 1.0),
     )
 
     print("Training configuration:")
@@ -186,15 +188,15 @@ def train_kto(config_path: str):
     print()
 
     # Train
-    print(f"{'─'*80}")
+    print(f"{'─' * 80}")
     print("Starting KTO training...")
-    print(f"{'─'*80}\n")
+    print(f"{'─' * 80}\n")
 
     trainer.train()
 
-    print(f"\n{'─'*80}")
+    print(f"\n{'─' * 80}")
     print("Training complete!")
-    print(f"{'─'*80}\n")
+    print(f"{'─' * 80}\n")
 
     # Save final model
     print("Saving model...")
@@ -206,20 +208,24 @@ def train_kto(config_path: str):
 
     # Save training metrics
     metrics_file = Path(output_dir) / "training_metrics.json"
-    with open(metrics_file, 'w') as f:
-        json.dump({
-            "final_train_loss": trainer.state.log_history[-1].get('train_loss', None),
-            "final_eval_loss": trainer.state.log_history[-1].get('eval_loss', None),
-            "total_steps": trainer.state.global_step,
-            "config": config
-        }, f, indent=2)
+    with open(metrics_file, "w") as f:
+        json.dump(
+            {
+                "final_train_loss": trainer.state.log_history[-1].get("train_loss", None),
+                "final_eval_loss": trainer.state.log_history[-1].get("eval_loss", None),
+                "total_steps": trainer.state.global_step,
+                "config": config,
+            },
+            f,
+            indent=2,
+        )
 
     print(f"✓ Metrics saved to: {metrics_file}")
     print()
 
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
     print("KTO training pipeline complete!")
-    print(f"{'='*80}\n")
+    print(f"{'=' * 80}\n")
 
     print("Next steps:")
     print(f"  1. Review TensorBoard logs: tensorboard --logdir {output_dir}")
@@ -227,16 +233,15 @@ def train_kto(config_path: str):
     print(f"  3. Export to Ollama: python scripts/export_to_ollama.py --model {output_dir}")
     print()
 
+
 def main():
     """Main entry point for KTO training."""
-    parser = argparse.ArgumentParser(
-        description='Train model using KTO from MACA debates'
-    )
+    parser = argparse.ArgumentParser(description="Train model using KTO from MACA debates")
     parser.add_argument(
-        '--config',
+        "--config",
         type=str,
-        default='proprietary/configs/kto_training_config.json',
-        help='Path to training configuration JSON'
+        default="proprietary/configs/kto_training_config.json",
+        help="Path to training configuration JSON",
     )
 
     args = parser.parse_args()
@@ -253,6 +258,7 @@ def main():
         return
 
     train_kto(str(config_path))
+
 
 if __name__ == "__main__":
     main()
