@@ -6,7 +6,6 @@ Generates comprehensive Q&A pairs from CMA source material across all 5 modules.
 Target: 93-143 new examples to reach 100-150 total.
 """
 
-
 # Training example templates organized by module and concept
 TRAINING_TEMPLATES = {
     "A": [

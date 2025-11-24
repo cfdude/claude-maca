@@ -254,7 +254,6 @@ def catalog_images(media_dir, markdown_file, output_file):
 
 
 if __name__ == "__main__":
-
     # Default paths
     media_dir = "docs/mortgage-domain/media"
     markdown_file = "docs/mortgage-domain/source_material.md"
