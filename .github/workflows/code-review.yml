@@ -126,4 +126,5 @@ jobs:
           EOF
 
       - name: Review posted
-        run: echo "Claude code review has been posted to PR #${{ github.event.pull_request.number }}"
+        if: env.ANTHROPIC_API_KEY != ''
+        run: echo "Claude code review has been posted to PR ${{ github.event.pull_request.number }}"
