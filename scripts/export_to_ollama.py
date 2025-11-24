@@ -5,14 +5,13 @@ Export Fine-Tuned Model to Ollama Format
 Merges LoRA adapters with base model and creates Ollama-compatible model.
 """
 
-import os
-import json
-import torch
-from pathlib import Path
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
 import logging
 import subprocess
+from pathlib import Path
+
+import torch
+from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -110,7 +109,7 @@ def create_ollama_model(modelfile_path, config):
     logger.info(f"Running: {cmd}")
 
     try:
-        result = subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True)
+        result = subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True)  # noqa: S602
         logger.info(result.stdout)
         logger.info(f"Ollama model '{config.OLLAMA_MODEL_NAME}' created successfully!")
     except subprocess.CalledProcessError as e:
@@ -133,7 +132,7 @@ def test_ollama_model(config):
     logger.info(f"Running: {cmd}")
 
     try:
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S602
             cmd, shell=True, check=True, capture_output=True, text=True, timeout=60
         )
         logger.info("\nModel response:")
@@ -152,7 +151,7 @@ def export(config):
     logger.info("Starting model export to Ollama format...")
 
     # Step 1: Merge LoRA weights
-    merged_model_dir = merge_lora_weights(config)
+    _merged_model_dir = merge_lora_weights(config)
 
     # Step 2: Create Modelfile
     modelfile_path = create_modelfile(config)

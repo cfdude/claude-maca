@@ -2,7 +2,6 @@
 """Monitor batch debate processing progress."""
 
 import json
-import time
 from pathlib import Path
 
 # Auto-detect project root and use proprietary/ directory
@@ -17,7 +16,7 @@ def load_results():
     try:
         with open(RESULTS_FILE) as f:
             return json.load(f)
-    except:
+    except (OSError, json.JSONDecodeError):
         return None
 
 
@@ -40,7 +39,7 @@ def print_progress():
     results = data.get("results", [])
 
     print(f"\n{'=' * 80}")
-    print(f"BATCH DEBATE PROGRESS")
+    print("BATCH DEBATE PROGRESS")
     print(f"{'=' * 80}\n")
 
     total = metrics.get("total_debates", 49)
@@ -50,12 +49,12 @@ def print_progress():
     print(f"Progress: {completed}/{total} debates ({progress:.1%})")
 
     if completed > 0:
-        print(f"\nQuality Filtering:")
+        print("\nQuality Filtering:")
         print(f"  Kept: {metrics.get('kept_for_training', 0)}")
         print(f"  Unanimous: {metrics.get('filtered_out_unanimous', 0)}")
         print(f"  Ambiguous: {metrics.get('filtered_out_ambiguous', 0)}")
 
-        print(f"\nConsensus:")
+        print("\nConsensus:")
         avg_consensus = metrics.get("total_consensus_sum", 0) / completed
         print(f"  Average: {avg_consensus:.2f}")
         print(
@@ -63,12 +62,12 @@ def print_progress():
         )
         print(f"  Diverged: {metrics.get('divergence_count', 0)}")
 
-        print(f"\nDPO Training Pairs:")
+        print("\nDPO Training Pairs:")
         print(f"  Generated: {metrics.get('dpo_pairs_generated', 0)}")
 
     if results:
         last = results[-1]
-        print(f"\nLast Debate:")
+        print("\nLast Debate:")
         print(f"  ID: {last['debate_id']}")
         print(f"  Category: {last['metadata'].get('category', 'unknown')}")
         print(f"  Final consensus: {last['final_consensus']['consensus_strength']:.1%}")

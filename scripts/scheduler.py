@@ -11,10 +11,10 @@ Handles:
 
 import asyncio
 import logging
-from typing import List, Dict, Any, Callable, Optional
 from dataclasses import dataclass, field
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"

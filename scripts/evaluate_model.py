@@ -6,14 +6,14 @@ Compares base model vs fine-tuned model on validation set.
 Generates qualitative comparisons and computes metrics.
 """
 
-import os
 import json
-import torch
-from pathlib import Path
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
-from datasets import load_dataset
 import logging
+from pathlib import Path
+
+import torch
+from datasets import load_dataset
+from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)

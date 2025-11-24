@@ -7,7 +7,6 @@ Uses pattern matching and templates to create Q&A pairs across all 5 modules.
 """
 
 import json
-import re
 from pathlib import Path
 
 
@@ -27,9 +26,9 @@ def generate_module_a_examples(start_id=8):
                 "category": "mortgage_strategy",
                 "difficulty": "intermediate",
                 "cma_module": "A",
-                "debate_worthy": false,
-                "client_facing": true,
-                "requires_calculation": true,
+                "debate_worthy": False,
+                "client_facing": True,
+                "requires_calculation": True,
             },
         },
         {
@@ -42,9 +41,9 @@ def generate_module_a_examples(start_id=8):
                 "cma_module": "A",
                 "source_section": "Power of Amortization",
                 "line_reference": "453-477",
-                "debate_worthy": false,
-                "client_facing": true,
-                "requires_calculation": true,
+                "debate_worthy": False,
+                "client_facing": True,
+                "requires_calculation": True,
             },
         },
         # Refinance timing (3 examples)
@@ -58,10 +57,10 @@ def generate_module_a_examples(start_id=8):
                 "cma_module": "A",
                 "source_section": "Refinance or Wait",
                 "line_reference": "515-551",
-                "debate_worthy": true,
-                "client_facing": true,
-                "requires_calculation": true,
-                "requires_market_analysis": true,
+                "debate_worthy": True,
+                "client_facing": True,
+                "requires_calculation": True,
+                "requires_market_analysis": True,
             },
         },
     ]

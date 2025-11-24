@@ -10,15 +10,15 @@ Based on validation recommendations:
 """
 
 import json
-import time
 import sys
-import urllib.request
+import time
 import urllib.error
-from pathlib import Path
-from typing import Dict, List, Any
+import urllib.request
 
 # Import answer parser for improved consensus detection
 from parser import AnswerParser
+from pathlib import Path
+from typing import Any, Dict, List
 
 # Configuration
 OLLAMA_URL = "http://localhost:11434"
@@ -80,13 +80,13 @@ class DebateBatchProcessor:
                 }
             ).encode("utf-8")
 
-            req = urllib.request.Request(
+            req = urllib.request.Request(  # noqa: S310
                 f"{OLLAMA_URL}/api/generate",
                 data=data,
                 headers={"Content-Type": "application/json"},
             )
 
-            with urllib.request.urlopen(req, timeout=120) as response:
+            with urllib.request.urlopen(req, timeout=120) as response:  # noqa: S310
                 result = json.loads(response.read().decode("utf-8"))
                 return {
                     "success": True,
@@ -391,7 +391,7 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
         self.metrics["total_debates"] = len(questions)
 
         print(f"\n{'=' * 80}")
-        print(f"MACA Batch Debate Processing")
+        print("MACA Batch Debate Processing")
         print(f"{'=' * 80}")
         print(f"Total questions: {len(questions)}")
         print(f"Agents: {NUM_AGENTS} (M=5)")
@@ -407,7 +407,7 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
                 # Run debate
                 debate_result = self.run_single_debate(question_data, idx, len(questions))
                 if not debate_result:
-                    print(f"✗ Debate failed, skipping...")
+                    print("✗ Debate failed, skipping...")
                     continue
 
                 # Apply quality filtering
@@ -483,20 +483,20 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
         m = self.metrics
 
         print(f"\n\n{'=' * 80}")
-        print(f"BATCH PROCESSING COMPLETE")
+        print("BATCH PROCESSING COMPLETE")
         print(f"{'=' * 80}\n")
 
-        print(f"Time & Performance:")
+        print("Time & Performance:")
         print(f"  Total time: {total_time / 60:.1f} minutes ({total_time / 3600:.1f} hours)")
         print(f"  Avg time per debate: {total_time / m['completed_debates']:.1f} seconds")
         print(f"  Debates per hour: {m['completed_debates'] / (total_time / 3600):.1f}")
 
-        print(f"\nDebate Results:")
+        print("\nDebate Results:")
         print(f"  Total debates: {m['total_debates']}")
         print(f"  Completed: {m['completed_debates']}")
         print(f"  Failed: {m['total_debates'] - m['completed_debates']}")
 
-        print(f"\nQuality Filtering:")
+        print("\nQuality Filtering:")
         print(
             f"  Kept for training: {m['kept_for_training']} ({m['kept_for_training'] / m['completed_debates']:.1%})"
         )
@@ -507,7 +507,7 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
             f"  Filtered (ambiguous): {m['filtered_out_ambiguous']} ({m['filtered_out_ambiguous'] / m['completed_debates']:.1%})"
         )
 
-        print(f"\nConsensus Analysis:")
+        print("\nConsensus Analysis:")
         print(f"  Average consensus: {m['avg_consensus']:.2f}")
         print(f"  Converged: {m['convergence_count']} ({m['convergence_rate']:.1%})")
         print(
@@ -517,12 +517,12 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
             f"  No change: {m['no_change_count']} ({m['no_change_count'] / m['completed_debates']:.1%})"
         )
 
-        print(f"\nDPO Training Pairs:")
+        print("\nDPO Training Pairs:")
         print(f"  Total pairs generated: {m['dpo_pairs_generated']}")
         print(f"  Pairs per kept debate: {m['dpo_pairs_generated'] / m['kept_for_training']:.1f}")
         print(f"  Generation rate: {m['dpo_generation_rate']:.1%}")
 
-        print(f"\nTarget Achievement:")
+        print("\nTarget Achievement:")
         targets = [
             ("Convergence rate >50%", m["convergence_rate"], 0.5),
             ("DPO generation rate >60%", m["dpo_generation_rate"], 0.6),
@@ -537,7 +537,7 @@ Having seen your peers' reasoning, provide your refined answer. You may change y
                 status = "✓" if actual >= target else "✗"
                 print(f"  {status} {name}: {actual:.1%} (target: {target:.1%})")
 
-        print(f"\nOutput Files:")
+        print("\nOutput Files:")
         print(f"  Debate results: {RESULTS_FILE}")
         print(f"  DPO training pairs: {TRAINING_PAIRS_FILE}")
         print(f"\n{'=' * 80}\n")

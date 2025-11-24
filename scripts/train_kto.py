@@ -9,14 +9,15 @@ responses that can be clearly labeled rather than pairs.
 Based on: "KTO: Model Alignment as Prospect Theoretic Optimization"
 """
 
-import json
 import argparse
-import torch
+import json
 from pathlib import Path
+
+import torch
 from datasets import Dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
-from trl import KTOTrainer, KTOConfig
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from trl import KTOConfig, KTOTrainer
 
 
 def load_kto_dataset(jsonl_path: str) -> Dataset:
@@ -110,7 +111,7 @@ def train_kto(config_path: str):
         trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
         total_params = sum(p.numel() for p in model.parameters())
 
-        print(f"✓ LoRA applied")
+        print("✓ LoRA applied")
         print(
             f"  Trainable parameters: {trainable_params:,} ({trainable_params / total_params:.2%})"
         )
@@ -129,7 +130,7 @@ def train_kto(config_path: str):
     train_dataset = train_val_split["train"]
     val_dataset = train_val_split["test"]
 
-    print(f"✓ Dataset loaded")
+    print("✓ Dataset loaded")
     print(f"  Total examples: {len(dataset)}")
     print(f"  Train examples: {len(train_dataset)}")
     print(f"  Val examples: {len(val_dataset)}")
@@ -229,7 +230,7 @@ def train_kto(config_path: str):
 
     print("Next steps:")
     print(f"  1. Review TensorBoard logs: tensorboard --logdir {output_dir}")
-    print(f"  2. Evaluate model performance")
+    print("  2. Evaluate model performance")
     print(f"  3. Export to Ollama: python scripts/export_to_ollama.py --model {output_dir}")
     print()
 

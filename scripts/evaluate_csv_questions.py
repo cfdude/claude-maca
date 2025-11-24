@@ -7,14 +7,14 @@ Analyzes question quality, duplicates, and alignment with V2 criteria.
 import csv
 import json
 from collections import Counter, defaultdict
-from typing import Dict, List, Tuple, Any
 from pathlib import Path
+from typing import Any, Dict, List
 
 
 def load_csv_questions(csv_path: str) -> List[Dict[str, str]]:
     """Load questions from CSV file."""
     questions = []
-    with open(csv_path, "r", encoding="utf-8") as f:
+    with open(csv_path, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             questions.append(row)
@@ -425,7 +425,7 @@ def generate_report(questions: List[Dict[str, str]]) -> str:
         (dup_analysis["unique_questions"] - expected_optimal - expected_unanimous) * 0.3
     )
 
-    report.append(f"Based on CSV metadata and V2 criteria:")
+    report.append("Based on CSV metadata and V2 criteria:")
     report.append(f"   Expected optimal consensus (60-80%): {expected_optimal} questions")
     report.append(f"   Expected unanimous (100%): {expected_unanimous} questions")
     report.append(
@@ -530,7 +530,7 @@ def main():
 
     # Convert to JSON format for batch processing
     validation_questions = []
-    for i, q in enumerate(top_50, 1):
+    for _i, q in enumerate(top_50, 1):
         validation_questions.append(
             {
                 "id": q["Question_ID"],

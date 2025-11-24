@@ -246,10 +246,10 @@ if __name__ == "__main__":
         json.dump(examples, f, indent=2)
 
     print(f"Created {len(examples)} statistical context examples")
-    print(f"Template demonstrates pattern for 40+ examples")
-    print(f"\nThese examples show how to:")
+    print("Template demonstrates pattern for 40+ examples")
+    print("\nThese examples show how to:")
     print("  - Transform market data into advisory context")
     print("  - Ground recommendations in actual statistics")
     print("  - Compare client scenarios to market norms")
     print("  - Use data for strategic positioning")
-    print(f"\nSaved to: data/statistical_context_examples.json")
+    print("\nSaved to: data/statistical_context_examples.json")

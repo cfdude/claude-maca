@@ -7,10 +7,10 @@ rather than pairwise comparisons. This can be useful when you have single respon
 that can be clearly labeled as good or bad based on consensus.
 """
 
-import json
 import argparse
+import json
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict
 
 
 def prepare_kto_data(

@@ -3,11 +3,11 @@
 Unit tests for KTO data preparation.
 """
 
-import unittest
 import json
-import tempfile
-from pathlib import Path
 import sys
+import tempfile
+import unittest
+from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -181,7 +181,7 @@ class TestKTODataPreparation(unittest.TestCase):
                 json.dump(self.sample_debates, f)
 
             output_file = Path(tmpdir) / "kto_data.jsonl"
-            stats = prepare_kto_data(str(input_file), str(output_file), min_consensus=0.6)
+            _stats = prepare_kto_data(str(input_file), str(output_file), min_consensus=0.6)
 
             # Load KTO data
             kto_entries = []
@@ -231,7 +231,7 @@ class TestKTODataPreparation(unittest.TestCase):
                 json.dump(self.sample_debates, f)
 
             output_file = Path(tmpdir) / "kto_data.jsonl"
-            stats = prepare_kto_data(
+            _stats = prepare_kto_data(
                 str(input_file), str(output_file), min_consensus=0.6, include_metadata=True
             )
 
@@ -253,7 +253,7 @@ class TestKTODataPreparation(unittest.TestCase):
                 json.dump(self.sample_debates, f)
 
             output_file = Path(tmpdir) / "kto_data.jsonl"
-            stats = prepare_kto_data(
+            _stats = prepare_kto_data(
                 str(input_file), str(output_file), min_consensus=0.6, include_metadata=False
             )
 

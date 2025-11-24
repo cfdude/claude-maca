@@ -6,9 +6,6 @@ Generates comprehensive Q&A pairs from CMA source material across all 5 modules.
 Target: 93-143 new examples to reach 100-150 total.
 """
 
-import json
-import re
-from pathlib import Path
 
 # Training example templates organized by module and concept
 TRAINING_TEMPLATES = {
@@ -326,15 +323,15 @@ def main():
 
     total_templates = sum(len(templates) for templates in TRAINING_TEMPLATES.values())
     print(f"\nTotal concept templates defined: {total_templates}")
-    print(f"\nBreakdown by module:")
+    print("\nBreakdown by module:")
     for module, templates in TRAINING_TEMPLATES.items():
         print(f"  Module {module}: {len(templates)} concepts")
 
-    print(f"\nTo reach 100-150 total examples:")
-    print(f"  Current seed examples: 7")
-    print(f"  Need to generate: 93-143 examples")
+    print("\nTo reach 100-150 total examples:")
+    print("  Current seed examples: 7")
+    print("  Need to generate: 93-143 examples")
     print(f"  Templates available: {total_templates}")
-    print(f"\nEach template can generate 1-3 variations")
+    print("\nEach template can generate 1-3 variations")
     print(f"Estimated total: {total_templates * 2} examples")
 
 

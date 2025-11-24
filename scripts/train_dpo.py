@@ -8,17 +8,17 @@ for parameter-efficient fine-tuning using debate-generated preference pairs.
 Conservative configuration designed for small datasets.
 """
 
-import os
 import json
-import torch
+import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments, set_seed
-from trl import DPOTrainer, DPOConfig
-from peft import LoraConfig, get_peft_model, PeftModel
+
+import torch
 from datasets import load_dataset
-import logging
+from peft import LoraConfig, get_peft_model
+from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
+from trl import DPOConfig, DPOTrainer
 
 # Setup logging
 logging.basicConfig(
@@ -118,7 +118,7 @@ def load_model_and_tokenizer(config):
         trust_remote_code=True,
     )
 
-    logger.info(f"Model loaded successfully")
+    logger.info("Model loaded successfully")
     logger.info(f"Model dtype: {model.dtype}")
     logger.info(f"Device: {model.device}")
 

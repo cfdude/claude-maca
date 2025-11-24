@@ -10,10 +10,9 @@ This script extracts:
 - Algorithm blocks
 """
 
-import os
+import json
 import sys
 from pathlib import Path
-import json
 
 
 def check_dependencies():
@@ -101,8 +100,8 @@ def extract_text_by_section(pdf_path, output_dir):
 
     doc = fitz.open(pdf_path)
     full_text = []
-    sections = {}
-    current_section = "Introduction"
+    _sections = {}
+    _current_section = "Introduction"
 
     print(f"\nExtracting text from {len(doc)} pages...")
 
@@ -266,11 +265,11 @@ def main():
     print("\n" + "=" * 60)
     print("Extraction complete!")
     print("=" * 60)
-    print(f"\nNext steps:")
+    print("\nNext steps:")
     print(f"1. Review extracted images in: {images_dir}")
     print(f"2. Review extracted text in: {extracted_dir}")
     print(f"3. Fill in markdown templates in: {project_dir}/docs")
-    print(f"4. Add image descriptions to images_metadata.json")
+    print("4. Add image descriptions to images_metadata.json")
 
 
 if __name__ == "__main__":

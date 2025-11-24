@@ -9,19 +9,18 @@ Provides efficient bulk processing with:
 - Resource management
 """
 
-import asyncio
 import argparse
+import asyncio
 import json
-from pathlib import Path
-from typing import Dict, Any
 import sys
+from pathlib import Path
+from typing import Any, Dict
 
 # Add scheduler to path
 sys.path.insert(0, str(Path(__file__).parent))
-from scheduler import DebateScheduler
-
 # Import debate processor
 from run_batch_debates import DebateBatchProcessor
+from scheduler import DebateScheduler
 
 
 async def run_single_debate_async(

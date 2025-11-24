@@ -5,14 +5,14 @@ Tests all normalization methods, domain-specific features, fuzzy matching,
 and edge cases to achieve >95% code coverage.
 """
 
-import unittest
 import sys
+import unittest
 from pathlib import Path
 
 # Add scripts directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
-from parser import AnswerParser, normalize_answer, check_answer_equivalence
+from parser import AnswerParser, check_answer_equivalence, normalize_answer
 
 
 class TestAnswerParserInit(unittest.TestCase):

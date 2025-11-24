@@ -12,7 +12,7 @@ def parse_markdown_questions(md_file: str) -> list:
     """Parse questions from markdown format."""
     questions = []
 
-    with open(md_file, "r") as f:
+    with open(md_file) as f:
         content = f.read()
 
     # Match pattern: "123. Question text here?"
@@ -82,21 +82,21 @@ def main():
 
     print(f"✓ Saved validation set: {validation_output}")
     print(f"  Sample questions: {len(validation_questions)}")
-    print(f"  Sampling: Every 10th question (1, 11, 21, 31...)")
+    print("  Sampling: Every 10th question (1, 11, 21, 31...)")
 
     print(f"\n{'=' * 80}")
     print("Conversion complete!")
     print(f"{'=' * 80}\n")
 
     print("Next steps:")
-    print(f"  1. Run validation: python scripts/run_batch_debates_scheduled.py \\")
+    print("  1. Run validation: python scripts/run_batch_debates_scheduled.py \\")
     print(f"       --questions {validation_output} \\")
-    print(f"       --output proprietary/data/validation_debate_results.json")
+    print("       --output proprietary/data/validation_debate_results.json")
     print(
-        f"\n  2. After validation, run full batch: python scripts/run_batch_debates_scheduled.py \\"
+        "\n  2. After validation, run full batch: python scripts/run_batch_debates_scheduled.py \\"
     )
     print(f"       --questions {full_output} \\")
-    print(f"       --output proprietary/data/full_debate_results.json")
+    print("       --output proprietary/data/full_debate_results.json")
     print()
 
 

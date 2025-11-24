@@ -5,9 +5,9 @@ Enhanced with per-agent metrics, convergence analysis, and quality scoring.
 """
 
 import json
-from pathlib import Path
 from collections import defaultdict
-from typing import Dict, List, Any
+from pathlib import Path
+from typing import Any, Dict, List
 
 # Auto-detect project root and use proprietary/ directory
 BASE_DIR = Path(__file__).parent.parent
@@ -127,7 +127,7 @@ def compute_detailed_metrics(results: List[Dict], config: Dict = None) -> Dict[s
                 convergence_stats["stable"] += 1
 
     # Calculate averages for agents
-    for agent_id, stats in agent_stats.items():
+    for _agent_id, stats in agent_stats.items():
         if stats["total_responses"] > 0:
             stats["avg_response_length"] = (
                 stats["total_reasoning_length"] / stats["total_responses"]
@@ -185,8 +185,8 @@ def visualize_metrics(metrics: Dict[str, Any], output_dir: Path):
         output_dir: Directory to save visualizations
     """
     try:
-        import matplotlib.pyplot as plt
         import matplotlib
+        import matplotlib.pyplot as plt
 
         matplotlib.use("Agg")  # Non-interactive backend
     except ImportError:
@@ -244,7 +244,7 @@ def visualize_metrics(metrics: Dict[str, Any], output_dir: Path):
         transform=axes[1, 0].transAxes,
         ha="center",
         va="top",
-        bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
+        bbox={"boxstyle": "round", "facecolor": "wheat", "alpha": 0.5},
     )
 
     # 4. Quality score gauge (bottom-right)
@@ -315,7 +315,7 @@ def analyze_results():
     print(f"Failed: {metrics['total_debates'] - metrics['completed_debates']}")
 
     # Quality filtering
-    print(f"\nQUALITY FILTERING")
+    print("\nQUALITY FILTERING")
     print(f"{'─' * 80}")
     total = metrics["completed_debates"]
     print(
@@ -332,7 +332,7 @@ def analyze_results():
     detailed_metrics = compute_detailed_metrics(results)
 
     # Per-agent performance
-    print(f"\nPER-AGENT PERFORMANCE")
+    print("\nPER-AGENT PERFORMANCE")
     print(f"{'─' * 80}")
     agent_perf = detailed_metrics["agent_performance"]
 
@@ -344,13 +344,13 @@ def analyze_results():
         print(f"  Answer changes (R1→R2): {stats['answer_changes']}")
 
     # Consensus analysis
-    print(f"\nCONSENSUS ANALYSIS")
+    print("\nCONSENSUS ANALYSIS")
     print(f"{'─' * 80}")
     print(f"Average consensus: {metrics['avg_consensus']:.2f}")
-    print(f"Target range: 0.6-0.8")
+    print("Target range: 0.6-0.8")
 
     consensus_dist = detailed_metrics["consensus_distribution"]
-    print(f"\nConsensus distribution:")
+    print("\nConsensus distribution:")
     for range_label, count in sorted(consensus_dist.items()):
         percentage = (count / total * 100) if total > 0 else 0
         bar_length = int(percentage / 2)  # Scale to 50 chars max
@@ -358,17 +358,17 @@ def analyze_results():
         print(f"  {range_label:12s}: {count:3d} ({percentage:5.1f}%) {bar}")
 
     # Convergence analysis
-    print(f"\nCONVERGENCE ANALYSIS")
+    print("\nCONVERGENCE ANALYSIS")
     print(f"{'─' * 80}")
     convergence = detailed_metrics["convergence_patterns"]
     print(f"Improved: {convergence['improved']} ({convergence['improved'] / total:.1%})")
     print(f"Stable: {convergence['stable']} ({convergence['stable'] / total:.1%})")
     print(f"Degraded: {convergence['degraded']} ({convergence['degraded'] / total:.1%})")
     print(f"Average improvement: {convergence['avg_improvement']:+.1%}")
-    print(f"Target: >50% improved")
+    print("Target: >50% improved")
 
     # Quality score
-    print(f"\nTRAINING DATA QUALITY SCORE")
+    print("\nTRAINING DATA QUALITY SCORE")
     print(f"{'─' * 80}")
     quality = detailed_metrics["quality_score"]
     print(f"Quality score: {quality:.1%}")
@@ -383,13 +383,13 @@ def analyze_results():
         quality_rating = "Poor - Review debate configuration"
 
     print(f"Rating: {quality_rating}")
-    print(f"\nQuality is based on:")
-    print(f"  • Optimal consensus range (0.6-0.8): Higher is better")
-    print(f"  • Avoiding unanimous (1.0) debates: Too easy, no signal")
-    print(f"  • Avoiding ambiguous (<0.5) debates: Too hard, unclear")
+    print("\nQuality is based on:")
+    print("  • Optimal consensus range (0.6-0.8): Higher is better")
+    print("  • Avoiding unanimous (1.0) debates: Too easy, no signal")
+    print("  • Avoiding ambiguous (<0.5) debates: Too hard, unclear")
 
     # DPO training pairs
-    print(f"\nDPO TRAINING PAIRS")
+    print("\nDPO TRAINING PAIRS")
     print(f"{'─' * 80}")
     print(f"Total pairs generated: {metrics['dpo_pairs_generated']}")
     if metrics["kept_for_training"] > 0:
@@ -397,10 +397,10 @@ def analyze_results():
             f"Pairs per kept debate: {metrics['dpo_pairs_generated'] / metrics['kept_for_training']:.1f}"
         )
     print(f"Generation rate: {metrics['dpo_generation_rate']:.1%}")
-    print(f"Target generation rate: >60%")
+    print("Target generation rate: >60%")
 
     # Category breakdown
-    print(f"\nCATEGORY BREAKDOWN")
+    print("\nCATEGORY BREAKDOWN")
     print(f"{'─' * 80}")
     category_stats = defaultdict(
         lambda: {"total": 0, "kept": 0, "unanimous": 0, "ambiguous": 0, "pairs": 0}
@@ -431,7 +431,7 @@ def analyze_results():
         print(f"  DPO pairs: {stats['pairs']}")
 
     # Target achievement
-    print(f"\n\nTARGET ACHIEVEMENT")
+    print("\n\nTARGET ACHIEVEMENT")
     print(f"{'─' * 80}")
 
     targets = [
@@ -456,7 +456,7 @@ def analyze_results():
                 print(f"{status} {name}: {actual:.2f} (target: {target[0]}-{target[1]})")
 
     # Recommendations
-    print(f"\n\nRECOMMENDATIONS FOR DPO TRAINING")
+    print("\n\nRECOMMENDATIONS FOR DPO TRAINING")
     print(f"{'─' * 80}")
 
     if metrics["dpo_pairs_generated"] >= 100:
@@ -467,18 +467,18 @@ def analyze_results():
     if 0.6 <= metrics["avg_consensus"] <= 0.8:
         print(f"✓ Consensus strength in optimal range ({metrics['avg_consensus']:.2f})")
     else:
-        print(f"⚠ Consensus outside optimal range. Consider adjusting temperature or filtering.")
+        print("⚠ Consensus outside optimal range. Consider adjusting temperature or filtering.")
 
     if quality >= 0.6:
         print(f"✓ High quality training data (score: {quality:.1%})")
     else:
-        print(f"⚠ Quality score could be improved. Consider:")
-        print(f"   • Adjusting agent temperature for more diversity")
-        print(f"   • Filtering out more unanimous debates")
-        print(f"   • Reviewing question difficulty")
+        print("⚠ Quality score could be improved. Consider:")
+        print("   • Adjusting agent temperature for more diversity")
+        print("   • Filtering out more unanimous debates")
+        print("   • Reviewing question difficulty")
 
     # Generate visualizations
-    print(f"\n\nGENERATING VISUALIZATIONS")
+    print("\n\nGENERATING VISUALIZATIONS")
     print(f"{'─' * 80}")
     visualize_metrics(detailed_metrics, BASE_DIR / "proprietary/data")
 

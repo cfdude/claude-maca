@@ -7,8 +7,8 @@ with context, classification, and priority for training data preparation.
 """
 
 import json
-import re
 from pathlib import Path
+
 from PIL import Image
 
 
@@ -175,7 +175,7 @@ def catalog_images(media_dir, markdown_file, output_file):
     images = sorted(images)
 
     # Read markdown content
-    with open(markdown_file, "r", encoding="utf-8") as f:
+    with open(markdown_file, encoding="utf-8") as f:
         md_content = f.read()
 
     catalog = []
@@ -226,14 +226,14 @@ def catalog_images(media_dir, markdown_file, output_file):
 
     # Print statistics
     print(f"\n✓ Cataloged {len(catalog)} images")
-    print(f"\nBy Type:")
+    print("\nBy Type:")
     type_counts = {}
     for entry in catalog:
         type_counts[entry["type"]] = type_counts.get(entry["type"], 0) + 1
     for img_type, count in sorted(type_counts.items()):
         print(f"  {img_type}: {count}")
 
-    print(f"\nBy Priority:")
+    print("\nBy Priority:")
     priority_counts = {}
     for entry in catalog:
         priority_counts[entry["priority"]] = priority_counts.get(entry["priority"], 0) + 1
@@ -254,7 +254,6 @@ def catalog_images(media_dir, markdown_file, output_file):
 
 
 if __name__ == "__main__":
-    import sys
 
     # Default paths
     media_dir = "docs/mortgage-domain/media"

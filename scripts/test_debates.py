@@ -5,14 +5,14 @@ Orchestrate test debates to validate the system
 """
 
 import json
-import requests
-from typing import List, Dict, Any
 from collections import Counter
-from pathlib import Path
-import sys
 
 # Import answer parser for improved consensus detection
 from parser import AnswerParser
+from pathlib import Path
+from typing import Any, Dict, List
+
+import requests
 
 # Ollama endpoint
 OLLAMA_URL = "http://localhost:11434/api/generate"
@@ -335,7 +335,7 @@ Having seen your peers' reasoning, provide your refined answer:"""
         # Round 1 Results
         round1 = debate["rounds"][0]["responses"]
         round1_votes = Counter([r["answer"] for r in round1])
-        print(f"\n🔄 Round 1 Results:")
+        print("\n🔄 Round 1 Results:")
         for answer, count in round1_votes.items():
             print(f"  - {answer}: {count} vote(s)")
         print(f"  - Consensus: {convergence['round1_consensus']:.1%}")
@@ -344,13 +344,13 @@ Having seen your peers' reasoning, provide your refined answer:"""
         if len(debate["rounds"]) > 1:
             round2 = debate["rounds"][1]["responses"]
             round2_votes = Counter([r["answer"] for r in round2])
-            print(f"\n🔄 Round 2 Results:")
+            print("\n🔄 Round 2 Results:")
             for answer, count in round2_votes.items():
                 print(f"  - {answer}: {count} vote(s)")
             print(f"  - Consensus: {convergence['round2_consensus']:.1%}")
 
         # Consensus Analysis
-        print(f"\n✅ Final Consensus:")
+        print("\n✅ Final Consensus:")
         print(f"  - Majority Answer: {consensus['majority_answer']}")
         print(f"  - Votes: {consensus['majority_count']}/{consensus['total_agents']}")
         print(f"  - Strength: {consensus['consensus_strength']:.1%}")
@@ -451,13 +451,13 @@ def main():
         round1_responses = orchestrator.run_round(debate_id=question_data["id"], round_num=1)
 
         # Round 2 - With peer feedback
-        round2_responses = orchestrator.run_round(
+        _round2_responses = orchestrator.run_round(
             debate_id=question_data["id"], round_num=2, previous_responses=round1_responses
         )
 
         # Calculate consensus
         print("\n📊 Calculating consensus...")
-        consensus = orchestrator.calculate_consensus(question_data["id"])
+        _consensus = orchestrator.calculate_consensus(question_data["id"])
 
         # Print summary
         orchestrator.print_debate_summary(question_data["id"])
@@ -511,7 +511,7 @@ def main():
         else:
             quality_dist["LOW"] += 1
 
-    print(f"\n📊 Quality Distribution:")
+    print("\n📊 Quality Distribution:")
     print(f"  - HIGH (>0.7): {quality_dist['HIGH']}")
     print(f"  - MODERATE (0.5-0.7): {quality_dist['MODERATE']}")
     print(f"  - LOW (<0.5): {quality_dist['LOW']}")

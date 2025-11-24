@@ -7,7 +7,6 @@ It provides a framework for creating training examples across all 5 modules.
 """
 
 import json
-from pathlib import Path
 
 # Module content areas to extract from
 MODULE_SECTIONS = {
@@ -148,8 +147,8 @@ def print_extraction_plan():
     plan = generate_extraction_plan()
 
     print("=== CMA Dataset Expansion Plan ===\n")
-    print(f"Current: 7 seed examples")
-    print(f"Target: 150 total examples")
+    print("Current: 7 seed examples")
+    print("Target: 150 total examples")
     print(f"To Create: {plan['total_needed']} new examples\n")
 
     print("Distribution by Difficulty:")
@@ -161,7 +160,7 @@ def print_extraction_plan():
         print(f"\n  Module {module}: {MODULE_SECTIONS[module]['name']}")
         print(f"    Total: {details['total']} examples")
         print(f"    Per Section: ~{details['per_section']} examples")
-        print(f"    Sections:")
+        print("    Sections:")
         for section in details["sections"]:
             print(f"      - {section['name']} (lines {section['lines']})")
 

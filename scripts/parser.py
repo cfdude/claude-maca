@@ -18,9 +18,8 @@ Usage:
     is_equivalent = parser.grade_answer("$1,000.00", "1000", domain="financial")
 """
 
-from typing import Optional
-from difflib import SequenceMatcher
 import re
+from difflib import SequenceMatcher
 
 
 class AnswerParser:
