@@ -1,56 +1,22 @@
-name: Security Scan
+name: Security Scans
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
-    branches: [main, dev]
-
-
-permissions:
-  contents: read
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 6am
 
 jobs:
-  gitleaks:
-    name: Scan for Secrets
-    runs-on: ubuntu-latest
+  trivy:
+    uses: cfdude/.github/.github/workflows/security-trivy.yml@main
+    permissions:
+      contents: read
+      security-events: write
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
-        with:
-          fetch-depth: 0
-
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-
-  dependency-scan:
-    name: Dependency Vulnerability Scan
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
-
-      - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install safety pip-audit
-
-      - name: Check Python dependencies with pip-audit
-        continue-on-error: true
-        run: |
-          pip-audit -r requirements.txt
-
-      - name: Check Python dependencies with Safety
-        continue-on-error: true
-        run: |
-          safety check -r requirements.txt --output text
+  semgrep:
+    uses: cfdude/.github/.github/workflows/security-semgrep.yml@main
+    permissions:
+      contents: read
+      security-events: write
