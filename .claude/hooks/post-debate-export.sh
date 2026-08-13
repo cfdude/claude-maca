@@ -32,7 +32,7 @@ DEBATE_ID=$(echo "$TOOL_ARGS" | jq -r '.debateId // ""')
 PAIR_COUNT=$(echo "$TOOL_RESULT" | grep -o "Exported [0-9]* DPO" | grep -o "[0-9]*" || echo "0")
 
 # Log to metrics file
-METRICS_FILE="${CLAUDE_PLUGIN_ROOT}/data/export_metrics.jsonl"
+METRICS_FILE="${CLAUDE_PROJECT_ROOT}/data/export_metrics.jsonl"
 mkdir -p "$(dirname "$METRICS_FILE")"
 
 echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"debate_id\":\"$DEBATE_ID\",\"pairs_exported\":$PAIR_COUNT}" >> "$METRICS_FILE"

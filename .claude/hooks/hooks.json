@@ -2,13 +2,12 @@
   "hooks": {
     "PostToolUse": [
       {
-        "toolNamePatterns": [
-          "mcp__maca-debate__export_training_data"
-        ],
+        "comment": "Post-Debate Export - Tracks export metrics and suggests next actions",
+        "matcher": "mcp__maca-debate__export_training_data",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-debate-export.sh"
+            "command": "${CLAUDE_PROJECT_ROOT}/.claude/hooks/post-debate-export.sh"
           }
         ]
       }
